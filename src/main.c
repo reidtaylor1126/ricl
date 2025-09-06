@@ -1,10 +1,12 @@
 #include "main.h"
 #include "tiles.h"
+#include "hand.h"
 
 int main(int argc, const char* argv[]) {
-    struct tile normal5M = {0b00010101};
-    struct tile red5M = {0b10010101};
-    renderTile(red5M);
-    renderTile (normal5M);
-    printf(" Done!\n");
+    struct tile* allTiles = generateAllTiles();
+    for (int i = 0; i < 136; i++) {
+        renderTile(allTiles[i]);
+    }
+    printf("Done!\n");
+    free(allTiles);
 }

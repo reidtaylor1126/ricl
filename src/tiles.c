@@ -4,8 +4,47 @@ char suitNames[] = {'!', 'm', 's', 'p', '!', 'D', 'W'};
 char dragonValues[] = {'W', 'G', 'R'};
 char windValues[] = {'E', 'S', 'W', 'N'};
 
+struct tile* generateAllTiles() {
+    struct tile* tiles = (struct tile*) malloc(sizeof(struct tile) * 136);
+    uint8_t tilesGenerated = 0;
+
+    // Numbers
+    for (int suit = SUIT_MAN; suit <= SUIT_PIN; suit += 16) {
+        for (int i = 1; i <= 9; i++) {
+            for (int j = 0; j < 4; j++) {
+                tiles[tilesGenerated].value = suit | i;
+                if (i == 5 && j == 0) {
+                    tiles[tilesGenerated].value |= IS_AKA;
+                }
+                tilesGenerated++;
+            }
+        }
+    }
+
+    // Dragons
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 4; j++) {
+            tiles[tilesGenerated].value = IS_DRAGON | i;
+            tilesGenerated++;
+        }
+    }
+
+    // Winds
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            tiles[tilesGenerated].value = IS_WIND | i;
+            tilesGenerated++;
+        }
+    }
+
+    return tiles;
+}
+
 char* tileDisplay(struct tile t) {
-    char* display = malloc(2);
+    /**
+     * Generates a display string for a tile. Be sure to free the string returned by this function after using it!
+     */
+    char* display = malloc(3);
 
     uint8_t suit = (t.value >> 4) & 7;
     display[1] = suitNames[suit];
@@ -18,6 +57,8 @@ char* tileDisplay(struct tile t) {
     else
         display[0] = value+'0';
 
+    display[2] = 0;
+
     return display;
 }
 
@@ -27,6 +68,7 @@ void renderTile(struct tile t) {
         printf("[" ANSI_COLOR_RED "%s" ANSI_COLOR_RESET "]", display);
     else
         printf("[%s]", display);
+    free(display);
 }
 
 char tileValue(char* display) {

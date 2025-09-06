@@ -11,8 +11,12 @@
 
 #define IS_AKA (128)
 #define IS_HONOR (64)
-#define IS_WIND (80)
-#define IS_DRAGON (96)
+#define IS_DRAGON (80)
+#define IS_WIND (96)
+
+#define SUIT_MAN (16)
+#define SUIT_SOU (32)
+#define SUIT_PIN (48)
 
 /***
  * Tile IDs
@@ -26,6 +30,8 @@
 struct tile {
     char value;
 };
+
+struct tile* generateAllTiles();
 
 char* tileDisplay(struct tile t);
 char tileValue(char* display);
