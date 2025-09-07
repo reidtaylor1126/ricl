@@ -18,7 +18,7 @@ struct wall {
     uint8_t numDora;
 };
 
-char* shuffle(char* subsetHead, size_t nToShuffle);
+struct wall build(char* tileSet);
 char draw(struct wall wall);
 char kan(struct wall wall);
 

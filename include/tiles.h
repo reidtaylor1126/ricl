@@ -28,6 +28,7 @@
  */
 
 char* generateAllTiles();
+char* shuffleTiles(char* subsetHead, size_t nToShuffle);
 
 char* tileDisplay(char t);
 char tileValue(char* display);

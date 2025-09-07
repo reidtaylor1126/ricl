@@ -40,6 +40,49 @@ char* generateAllTiles() {
     return tiles;
 }
 
+char* shuffleTiles(char* subsetHead, size_t nToShuffle) {
+    if (nToShuffle == 1) {
+        return subsetHead;
+    }
+    size_t nLeft = nToShuffle/2;
+    size_t nRight = nToShuffle - nLeft;
+
+    shuffleTiles(subsetHead, nLeft);
+    shuffleTiles(subsetHead+nLeft, nRight);
+
+    char* merged = malloc(nToShuffle);
+
+    size_t remainingLeft = nLeft;
+    size_t remainingRight = nRight;
+
+    while(remainingLeft && remainingRight) {
+        size_t take = rand() % (remainingLeft+remainingRight);
+        if (take < remainingLeft) {
+            merged[remainingLeft+remainingRight-1] = subsetHead[remainingLeft-1];
+            remainingLeft--;
+        } else {
+            merged[remainingLeft+remainingRight-1] = subsetHead[nLeft+remainingRight-1];
+            remainingRight--;
+        }
+    }
+
+    while (remainingLeft) {
+        merged[remainingLeft-1] = subsetHead[remainingLeft-1];
+        remainingLeft--;
+    }
+    
+    while (remainingRight) {
+        merged[remainingLeft+remainingRight-1] = subsetHead[nLeft+remainingRight-1];
+        remainingRight--;
+    }
+
+    for (size_t i = 0; i < nToShuffle; i++) {
+        subsetHead[i] = merged[i];
+    }
+    free(merged);
+    return subsetHead;
+}
+
 char* tileDisplay(char t) {
     /**
      * Generates a display string for a tile. Be sure to free the string returned by this function after using it!

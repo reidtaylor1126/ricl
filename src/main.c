@@ -7,7 +7,7 @@ int main(int argc, const char* argv[]) {
     // srand(5432);
 
     char* allTiles = generateAllTiles();
-    shuffle(allTiles, 136);
+    shuffleTiles(allTiles, 136);
 
     for (int i = 0; i < 136; i++) {
         renderTile(allTiles[i]);
