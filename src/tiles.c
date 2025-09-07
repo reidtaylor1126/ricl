@@ -4,17 +4,17 @@ char suitNames[] = {'!', 'm', 's', 'p', '!', 'D', 'W'};
 char dragonValues[] = {'W', 'G', 'R'};
 char windValues[] = {'E', 'S', 'W', 'N'};
 
-struct tile* generateAllTiles() {
-    struct tile* tiles = (struct tile*) malloc(sizeof(struct tile) * 136);
+char* generateAllTiles() {
+    char* tiles = (char*) malloc(136);
     uint8_t tilesGenerated = 0;
 
     // Numbers
     for (int suit = SUIT_MAN; suit <= SUIT_PIN; suit += 16) {
         for (int i = 1; i <= 9; i++) {
             for (int j = 0; j < 4; j++) {
-                tiles[tilesGenerated].value = suit | i;
+                tiles[tilesGenerated] = suit | i;
                 if (i == 5 && j == 0) {
-                    tiles[tilesGenerated].value |= IS_AKA;
+                    tiles[tilesGenerated] |= IS_AKA;
                 }
                 tilesGenerated++;
             }
@@ -24,7 +24,7 @@ struct tile* generateAllTiles() {
     // Dragons
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 4; j++) {
-            tiles[tilesGenerated].value = IS_DRAGON | i;
+            tiles[tilesGenerated] = IS_DRAGON | i;
             tilesGenerated++;
         }
     }
@@ -32,7 +32,7 @@ struct tile* generateAllTiles() {
     // Winds
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
-            tiles[tilesGenerated].value = IS_WIND | i;
+            tiles[tilesGenerated] = IS_WIND | i;
             tilesGenerated++;
         }
     }
@@ -40,19 +40,19 @@ struct tile* generateAllTiles() {
     return tiles;
 }
 
-char* tileDisplay(struct tile t) {
+char* tileDisplay(char t) {
     /**
      * Generates a display string for a tile. Be sure to free the string returned by this function after using it!
      */
     char* display = malloc(3);
 
-    uint8_t suit = (t.value >> 4) & 7;
+    uint8_t suit = (t >> 4) & 7;
     display[1] = suitNames[suit];
     
-    uint8_t value = t.value & 15;
-    if ((t.value & IS_WIND) == IS_WIND)
+    uint8_t value = t & 15;
+    if ((t & IS_WIND) == IS_WIND)
         display[0] = windValues[value];
-    else if ((t.value & IS_DRAGON) == IS_DRAGON)
+    else if ((t & IS_DRAGON) == IS_DRAGON)
         display[0] = dragonValues[value];
     else
         display[0] = value+'0';
@@ -62,9 +62,9 @@ char* tileDisplay(struct tile t) {
     return display;
 }
 
-void renderTile(struct tile t) {
+void renderTile(char t) {
     char* display = tileDisplay(t);
-    if (t.value & IS_AKA)
+    if (t & IS_AKA)
         printf("[" ANSI_COLOR_RED "%s" ANSI_COLOR_RESET "]", display);
     else
         printf("[%s]", display);

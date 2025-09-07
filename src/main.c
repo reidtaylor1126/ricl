@@ -3,7 +3,12 @@
 #include "hand.h"
 
 int main(int argc, const char* argv[]) {
-    struct tile* allTiles = generateAllTiles();
+    srand(time(NULL));
+    // srand(5432);
+
+    char* allTiles = generateAllTiles();
+    shuffle(allTiles, 136);
+
     for (int i = 0; i < 136; i++) {
         renderTile(allTiles[i]);
     }

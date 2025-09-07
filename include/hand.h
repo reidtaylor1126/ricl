@@ -6,8 +6,8 @@
 #include "wall.h"
 
 struct hand {
-    struct tile* tiles;
-    struct tile drawn;
+    char* tiles;
+    char drawn;
 };
 
 struct hand drawHand(struct wall wall);

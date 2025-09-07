@@ -3,21 +3,23 @@
 #define WALL_H
 
 #include "tiles.h"
+#include <stdlib.h>
 
 struct wallTile {
-    struct tile tile;
+    char tile;
     struct wallTile* next;
 };
 
 struct wall {
     struct wallTile* live;
     uint8_t numLive;
-    struct tile* dead;
+    char* dead;
     uint8_t numDead;
     uint8_t numDora;
 };
 
-struct tile draw(struct wall wall);
-struct tile kan(struct wall wall);
+char* shuffle(char* subsetHead, size_t nToShuffle);
+char draw(struct wall wall);
+char kan(struct wall wall);
 
 #endif

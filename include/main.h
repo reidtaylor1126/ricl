@@ -2,5 +2,6 @@
 #define MAIN_H
 
 #include <stdio.h>
+#include <time.h>
 
 #endif

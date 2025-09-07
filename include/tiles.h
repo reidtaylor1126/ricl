@@ -27,15 +27,11 @@
  * aka flag
  */
 
-struct tile {
-    char value;
-};
+char* generateAllTiles();
 
-struct tile* generateAllTiles();
-
-char* tileDisplay(struct tile t);
+char* tileDisplay(char t);
 char tileValue(char* display);
 
-void renderTile(struct tile t);
+void renderTile(char t);
 
 #endif
