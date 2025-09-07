@@ -10,6 +10,6 @@ struct hand {
     char drawn;
 };
 
-struct hand drawHand(struct wall wall);
+struct hand drawHand(struct wall* wall);
 
 #endif

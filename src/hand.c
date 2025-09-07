@@ -2,7 +2,7 @@
 #include "wall.h"
 
 
-struct hand drawHand(struct wall wall) {
+struct hand drawHand(struct wall* wall) {
     char* handTiles = (char*) malloc(13);
 
     for (int i = 0; i < 13; i++) {

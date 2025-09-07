@@ -40,15 +40,19 @@ char* generateAllTiles() {
     return tiles;
 }
 
-char* shuffleTiles(char* subsetHead, size_t nToShuffle) {
+char* shuffleTiles(char* tiles) {
+    return (_shuffleTiles(tiles, 136));
+}
+
+char* _shuffleTiles(char* subsetHead, size_t nToShuffle) {
     if (nToShuffle == 1) {
         return subsetHead;
     }
     size_t nLeft = nToShuffle/2;
     size_t nRight = nToShuffle - nLeft;
 
-    shuffleTiles(subsetHead, nLeft);
-    shuffleTiles(subsetHead+nLeft, nRight);
+    _shuffleTiles(subsetHead, nLeft);
+    _shuffleTiles(subsetHead+nLeft, nRight);
 
     char* merged = malloc(nToShuffle);
 
