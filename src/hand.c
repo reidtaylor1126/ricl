@@ -71,4 +71,6 @@ void destroyHand(struct hand* hand) {
             meldCursor = nextMeld;
         }
     }
+
+    free(hand);
 }

@@ -8,7 +8,7 @@
 struct table {
     char* tileSet;
     struct wall* wall;
-    struct player* players;
+    struct player* players[4];
     uint8_t dealerSeat;
     uint8_t playerTurn;
     uint8_t riichiCount;
@@ -19,6 +19,6 @@ struct table {
 struct table* createTable();
 void deal(struct table* table, uint8_t advanceDealer);
 void printTable(struct table* table);
-void destroyTable(struct table*);
+void destroyTable(struct table* table);
 
 #endif

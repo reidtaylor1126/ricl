@@ -13,7 +13,7 @@ struct discard {
 
 struct player {
     struct hand* hand;
-    struct discard* discards;
+    struct discard discards[DISCARD_CAPACITY];
     uint8_t nDiscards;
     char name[16];
     int score;
@@ -21,6 +21,6 @@ struct player {
 
 void createPlayerIn(struct player* dest, char* name);
 struct player* createPlayer(char* name);
-void deletePlayer(struct player*);
+void destroyPlayer(struct player* player);
 
 #endif

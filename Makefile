@@ -1,9 +1,10 @@
 CC = gcc
 CFLAGS = -Wall
+ODIR = target
 INC = -Iinclude
 
-main: target/main.o target/tiles.o target/hand.o target/wall.o target/player.o
-		$(CC) target/main.o target/tiles.o target/hand.o target/wall.o target/player.o -o target/ricl
+main: target/main.o target/tiles.o target/hand.o target/wall.o target/player.o target/table.o
+		$(CC) target/main.o target/tiles.o target/hand.o target/wall.o target/player.o target/table.o -o target/ricl
 
 target/main.o: src/main.c 
 		$(CC) -c $(INC) $(CFLAGS) src/main.c -o target/main.o
@@ -19,6 +20,9 @@ target/wall.o: src/wall.c
 
 target/player.o: src/player.c
 		$(CC) -c $(INC) $(CFLAGS) src/player.c -o target/player.o
+
+target/table.o: src/table.c
+		$(CC) -c $(INC) $(CFLAGS) src/table.c -o target/table.o
 
 clean: 
 	rm -f $(ODIR)/*.o $(OUT)

@@ -14,8 +14,6 @@ void buildWall(struct wall* wall, char* tileSet) {
     wall->numDead = 14;
     wall->dead = &(tileSet[122]);
     wall->numDora = 1;
-
-    return wall;
 }
 
 char draw(struct wall* wall) {
