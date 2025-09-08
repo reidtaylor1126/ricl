@@ -8,29 +8,16 @@ int main(int argc, const char* argv[]) {
     // srand(5432);
 
     char* allTiles = generateAllTiles();
-
-    printf("Generated tiles\n");
+    shuffleTiles(allTiles);
     
-    struct wall* myWall = buildWall(allTiles);
-    printWall(myWall);
+    struct hand* myHand = createHand();
 
-    char newTile = draw(myWall);
-    printf("Drew ");
-    renderTile(newTile);
-    printf("!\n");
+    for (int i = 0; i < 13; i++) {
+        addTileToHand(myHand, allTiles[i]);
+    }
+    renderHand(myHand);
 
-    printWall(myWall);
-
-    newTile = kan(myWall);
-    printf("Drew ");
-    renderTile(newTile);
-    printf("!\n");
-
-    printWall(myWall);
-
-    cleanWall(myWall);
-    free(myWall);
-
+    destroyHand(myHand);
+    free(myHand);
     free(allTiles);
-    printf("Done!\n");
 }

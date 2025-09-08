@@ -45,6 +45,9 @@ char* shuffleTiles(char* tiles) {
 }
 
 char* _shuffleTiles(char* subsetHead, size_t nToShuffle) {
+/**
+ * Recursive divide-and-conquer shuffling algorithm, returns in-place shuffled array.
+ */
     if (nToShuffle == 1) {
         return subsetHead;
     }
@@ -89,7 +92,8 @@ char* _shuffleTiles(char* subsetHead, size_t nToShuffle) {
 
 char* tileDisplay(char t) {
     /**
-     * Generates a display string for a tile. Be sure to free the string returned by this function after using it!
+     * Generates a display string for a tile. 
+     * Be sure to free the string returned by this function after using it!
      */
     char* display = malloc(3);
 
@@ -111,8 +115,14 @@ char* tileDisplay(char t) {
 
 void renderTile(char t) {
     char* display = tileDisplay(t);
-    if (t & IS_AKA)
+    if (t & IS_AKA || (t & RED_DRAGON) == RED_DRAGON)
         printf("[" ANSI_COLOR_RED "%s" ANSI_COLOR_RESET "]", display);
+    else if ((t & GREEN_DRAGON) == GREEN_DRAGON) 
+        printf("[" ANSI_COLOR_GREEN "%s" ANSI_COLOR_RESET "]", display);
+    else if ((t & IS_DRAGON) == IS_DRAGON)
+        printf("[" ANSI_COLOR_BLUE "%s" ANSI_COLOR_RESET "]", display);
+    else if ((t & IS_WIND) == IS_WIND) 
+        printf("[" ANSI_COLOR_YELLOW "%s" ANSI_COLOR_RESET "]", display);
     else
         printf("[%s]", display);
     free(display);

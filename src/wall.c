@@ -1,24 +1,21 @@
 #include "wall.h"
 
-struct wall* buildWall(char* tileSet) {
+void buildWall(struct wall* wall, char* tileSet) {
     shuffleTiles(tileSet);
 
-    struct wall *newWall;
-    newWall = malloc(sizeof *newWall);
-
-    newWall->numLive = 122;
+    wall->numLive = 122;
     for (int i = 121; i >=0; i--) {
         struct wallTile* newTile = (struct wallTile*) malloc(sizeof(struct wallTile));
         newTile->tile = tileSet[i];
-        newTile->next = newWall->live;
-        newWall->live = newTile;
+        newTile->next = wall->live;
+        wall->live = newTile;
     } 
 
-    newWall->numDead = 14;
-    newWall->dead = &(tileSet[122]);
-    newWall->numDora = 1;
+    wall->numDead = 14;
+    wall->dead = &(tileSet[122]);
+    wall->numDora = 1;
 
-    return newWall;
+    return wall;
 }
 
 char draw(struct wall* wall) {

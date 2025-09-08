@@ -18,7 +18,7 @@ struct wall {
     uint8_t numDora;
 };
 
-struct wall* buildWall(char* tileSet);
+void buildWall(struct wall* wall, char* tileSet);
 char draw(struct wall* wall);
 char kan(struct wall* wall);
 void printWall(struct wall* wall);
