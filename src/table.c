@@ -49,7 +49,7 @@ void deal(struct table* table, uint8_t advanceDealer) {
 
 void printTable(struct table* table) {
     printWall(table->wall);
-    printf("\n");
+    printf(" | %s\n", table->prevailingWind == 1 ? "South" : "East");
     for (int i = 0; i < 60; i++)
         printf("=");
     printf("\n");

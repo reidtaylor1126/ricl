@@ -47,7 +47,6 @@ void printWall(struct wall* wall) {
     for (int i = 0; i < wall->numDora; i++) {
         renderTile(wall->dead[4+(2*i)]);
     }
-    printf("\n");
 }
 
 void cleanWall(struct wall* wall) {
