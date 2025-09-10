@@ -10,6 +10,8 @@ int main(int argc, const char* argv[]) {
     deal(myTable, 1);
 
     printTable(myTable);
+    
+    tickTurn(myTable);
 
     destroyTable(myTable);
 }

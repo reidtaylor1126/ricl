@@ -19,6 +19,64 @@ struct table* createTable() {
     return newTable;
 }
 
+void eraseLast(uint8_t nChars) {
+    printf("\r\033[1A");
+    for (int i = 0; i < nChars; i++) {
+        printf(" ");
+    }
+    printf("\r");
+}
+
+void handleAwaitDraw(struct table* table, struct player* currentPlayer) {
+    int inputBuffer = 0;
+    scanf("%d", &inputBuffer);
+    if (inputBuffer == ACTION_DRAW) {
+        char drawn = draw(table->wall);
+        currentPlayer->hand->drawn = drawn;
+        currentPlayer->turnStage = HAS_14TH_TILE;
+    } else if (inputBuffer == ACTION_PON) {
+        uint8_t count = countInHand(currentPlayer->hand, table->lastDiscard->tile);
+        if (count > 1) {
+            table->lastDiscard->called = 1;
+            pon(currentPlayer->hand, table->lastDiscard->tile);
+            currentPlayer->turnStage = DISCARDING;
+        } else {
+            printf("\a");
+        }
+    } else if (inputBuffer == ACTION_CHI) {
+        char options = chiOptions(currentPlayer->hand, table->lastDiscard->tile);
+        if (options == 0) {
+            printf("\a");
+        } else {
+            printf("Enter bottom of chi: ");
+            scanf("%d", &inputBuffer);
+        }
+    } else if (inputBuffer == ACTION_KAN) {
+        uint8_t count = countInHand(currentPlayer->hand, table->lastDiscard->tile);
+        if (count > 1) {
+            table->lastDiscard->called = 1;
+            kan(currentPlayer->hand, table->lastDiscard->tile);
+            currentPlayer->turnStage = DISCARDING;
+        } else {
+            printf("\a");
+        }
+    }
+}
+
+void tickTurn(struct table* table) {
+    struct player* currentPlayer = table->players[table->playerTurn];
+    renderHand(currentPlayer->hand);
+    if (currentPlayer->turnStage == AWAITING_DRAW) {
+        handleAwaitDraw(table, currentPlayer);
+    }
+    if (currentPlayer->turnStage == HAS_14TH_TILE) {
+        // TODO
+    }
+    if (currentPlayer->turnStage == DISCARDING) {
+        // TODO
+    }
+}
+
 void deal(struct table* table, uint8_t advanceDealer) {
     if (advanceDealer == 1) {
         table->dealerSeat++;
@@ -45,6 +103,7 @@ void deal(struct table* table, uint8_t advanceDealer) {
     }
     char firstDraw = draw(table->wall);
     addTileToHand(table->players[table->dealerSeat]->hand, firstDraw);
+    table->players[table->dealerSeat]->turnStage = HAS_14TH_TILE;
 }
 
 void printTable(struct table* table) {

@@ -9,7 +9,7 @@
  * data: X X X X X X X X
  *       |           \ /
  *       |            |
- *       |            meldType [sequence, triplet, kan]
+ *       |            meldType [sequence, triplet, kan, closed kan]
  *       hasAka
  */
 
@@ -28,12 +28,17 @@ struct hand {
     struct handTile* tilesHead;
     struct meld* meldsHead;
     uint8_t nClosed;    // number of closed tiles
-    uint8_t nOpen;      // number of open melds, not tiles
+    uint8_t nMelds;      // number of open melds, not tiles
     char drawn;
 };
 
 struct hand* createHand();
 int addTileToHand(struct hand* hand, char tile);
+uint8_t countInHand(struct hand* hand, char tile);
+void pon(struct hand* hand, char tile);
+void chi(struct hand* hand, char lowTile);
+char chiOptions(struct hand* hand, char tile);
+void kan(struct hand* hand, char tile);
 void renderHand(struct hand* hand);
 void destroyHand(struct hand* hand);
 

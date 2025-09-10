@@ -29,17 +29,17 @@ char draw(struct wall* wall) {
     return drawn;
 }
 
-char kan(struct wall* wall) {
+char kanDraw(struct wall* wall) {
     if (wall->numDead <= 10) {
         return (char) {0};
     }
-    char kanDraw = wall->dead[14-wall->numDead];
+    char drawn = wall->dead[14-wall->numDead];
 
     wall->numDora++;
     wall->numLive--;
     wall->numDead--;
 
-    return kanDraw;
+    return drawn;
 }
 
 void printWall(struct wall* wall) {

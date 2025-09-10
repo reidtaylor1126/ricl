@@ -24,6 +24,8 @@
 #define SUIT_SOU (32)
 #define SUIT_PIN (48)
 
+#define VALUE_MASK (127)
+
 /***
  * Tile IDs
  * X X X X X X X X
