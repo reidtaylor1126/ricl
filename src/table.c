@@ -29,48 +29,103 @@ void eraseLast(uint8_t nChars) {
 
 void handleAwaitDraw(struct table* table, struct player* currentPlayer) {
     int inputBuffer = 0;
+    printf("(1) Draw | (2): Pon | (3): Chi | (4): Kan | (5): Ron | > ");
     scanf("%d", &inputBuffer);
-    if (inputBuffer == ACTION_DRAW) {
-        char drawn = draw(table->wall);
-        currentPlayer->hand->drawn = drawn;
-        currentPlayer->turnStage = HAS_14TH_TILE;
-    } else if (inputBuffer == ACTION_PON) {
-        uint8_t count = countInHand(currentPlayer->hand, table->lastDiscard->tile);
-        if (count > 1) {
-            table->lastDiscard->called = 1;
-            pon(currentPlayer->hand, table->lastDiscard->tile);
-            currentPlayer->turnStage = DISCARDING;
-        } else {
+    switch (inputBuffer) {
+        case ACTION_DRAW:
+            char drawn = draw(table->wall);
+            currentPlayer->hand->drawn = drawn;
+            currentPlayer->turnStage = HAS_14TH_TILE;
+            break;
+        case ACTION_PON:
+            if (countInHand(currentPlayer->hand, table->lastDiscard->tile) > 1) {
+                table->lastDiscard->data = DISCARD_CALLED;
+                pon(currentPlayer->hand, table->lastDiscard->tile);
+                currentPlayer->turnStage = DISCARDING;
+            } else {
+                printf("\a");
+            }
+            break;
+        case ACTION_CHI:
+            char options = chiOptions(currentPlayer->hand, table->lastDiscard->tile);
+            if (options == 0) {
+                printf("\a");
+            } else {
+                printf("Enter bottom of chi: ");
+                scanf("%d", &inputBuffer);
+            }
+        case ACTION_KAN:
+            if (countInHand(currentPlayer->hand, table->lastDiscard->tile) > 2) {
+                table->lastDiscard->data = DISCARD_CALLED;
+                closedKan(currentPlayer->hand, table->lastDiscard->tile);
+            } else {
+                printf("\a");
+            }
+        case ACTION_RON:
+            // TODO
+            break;
+        default:
             printf("\a");
-        }
-    } else if (inputBuffer == ACTION_CHI) {
-        char options = chiOptions(currentPlayer->hand, table->lastDiscard->tile);
-        if (options == 0) {
+            break;
+    }
+}
+
+void handleDiscard(struct table* table, struct player* currentPlayer) {
+    int inputBuffer = 0;
+    scanf("%d", &inputBuffer);
+    char tile;
+    if (inputBuffer > 1 && inputBuffer < currentPlayer->nDiscards) {
+        tile = removeFromHand(currentPlayer->hand, inputBuffer-1);
+    } else if (currentPlayer->hand->drawn != 0 && inputBuffer == 0) {
+        tile = currentPlayer->hand->drawn;
+        currentPlayer->hand->drawn = 0;
+    } else {
+        printf("\a");
+        return;
+    }
+    struct discard* newDiscard = addDiscard(currentPlayer, tile);
+    table->lastDiscard = newDiscard;
+    currentPlayer->turnStage = NOT_TURN;
+}
+
+void handleRiichi(struct table* table, struct player* currentPlayer) {
+    int inputBuffer = 0;
+    scanf("%d", &inputBuffer);
+    struct hand* testHand = cloneHandWithout(currentPlayer->hand, inputBuffer);
+    
+    free(testHand);
+}
+
+void handleAwaitAction(struct table* table, struct player* currentPlayer) {
+    int inputBuffer = 0;
+    printf("(1) Discard | (2): Riichi | (3): Tsumo | (4): Kan | > ");
+    scanf("%d", &inputBuffer);
+    switch (inputBuffer) {
+        case ACTION_DISCARD:
+            handleDiscard(table, currentPlayer);
+            break;
+        case ACTION_RIICHI:
+            handleRiichi(table, currentPlayer);
+            break;
+        case ACTION_TSUMO:
+            // TODO
+            break;
+        case ACTION_KAN:
+            // TODO
+            break;
+        default:
             printf("\a");
-        } else {
-            printf("Enter bottom of chi: ");
-            scanf("%d", &inputBuffer);
-        }
-    } else if (inputBuffer == ACTION_KAN) {
-        uint8_t count = countInHand(currentPlayer->hand, table->lastDiscard->tile);
-        if (count > 1) {
-            table->lastDiscard->called = 1;
-            kan(currentPlayer->hand, table->lastDiscard->tile);
-            currentPlayer->turnStage = DISCARDING;
-        } else {
-            printf("\a");
-        }
     }
 }
 
 void tickTurn(struct table* table) {
     struct player* currentPlayer = table->players[table->playerTurn];
-    renderHand(currentPlayer->hand);
+    // renderHand(currentPlayer->hand, 0);
     if (currentPlayer->turnStage == AWAITING_DRAW) {
         handleAwaitDraw(table, currentPlayer);
     }
     if (currentPlayer->turnStage == HAS_14TH_TILE) {
-        // TODO
+        handleAwaitAction(table, currentPlayer);
     }
     if (currentPlayer->turnStage == DISCARDING) {
         // TODO
@@ -100,19 +155,24 @@ void deal(struct table* table, uint8_t advanceDealer) {
             char tile = draw(table->wall);
             addTileToHand(table->players[i]->hand, tile);
         }
+        table->players[i]->didRiichi = 0;
     }
     char firstDraw = draw(table->wall);
-    addTileToHand(table->players[table->dealerSeat]->hand, firstDraw);
+    table->players[table->dealerSeat]->hand->drawn = firstDraw;
     table->players[table->dealerSeat]->turnStage = HAS_14TH_TILE;
 }
 
 void printTable(struct table* table) {
-    printWall(table->wall);
+    printfall(table->wall);
     printf(" | %s\n", table->prevailingWind == 1 ? "South" : "East");
     for (int i = 0; i < 60; i++)
         printf("=");
     printf("\n");
     for (int i = 0; i < 4; i++) {
+        if (i == table->playerTurn)
+            printf("> ");
+        else
+            printf("  ");
         if (i == table->dealerSeat)
             printf(ANSI_COLOR_YELLOW);
         printf("%s: ", table->players[i]->name);

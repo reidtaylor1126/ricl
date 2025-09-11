@@ -4,6 +4,7 @@ char suitNames[] = {'!', 'm', 's', 'p', '!', 'D', 'W'};
 char dragonValues[] = {'W', 'G', 'R'};
 char windValues[] = {'E', 'S', 'W', 'N'};
 
+
 char* generateAllTiles() {
     char* tiles = (char*) malloc(136);
     uint8_t tilesGenerated = 0;
@@ -125,6 +126,7 @@ void renderTile(char t) {
         printf("[" ANSI_COLOR_YELLOW "%s" ANSI_COLOR_RESET "]", display);
     else
         printf("[%s]", display);
+
     free(display);
 }
 

@@ -42,7 +42,7 @@ char kanDraw(struct wall* wall) {
     return drawn;
 }
 
-void printWall(struct wall* wall) {
+void printfall(struct wall* wall) {
     printf("[%u]] | ", wall->numLive);
     for (int i = 0; i < wall->numDora; i++) {
         renderTile(wall->dead[4+(2*i)]);

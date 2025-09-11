@@ -13,6 +13,11 @@ struct player* createPlayer(char* name) {
     return newPlayer;
 }
 
+struct discard* addDiscard(struct player* player, char tile) {
+    player->discards[player->nDiscards].tile = tile;
+    return(&player->discards[player->nDiscards++]);
+}
+
 void destroyPlayer(struct player* player) {
     destroyHand(player->hand);
     free(player);

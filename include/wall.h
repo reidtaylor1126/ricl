@@ -21,7 +21,7 @@ struct wall {
 void buildWall(struct wall* wall, char* tileSet);
 char draw(struct wall* wall);
 char kanDraw(struct wall* wall);
-void printWall(struct wall* wall);
+void printfall(struct wall* wall);
 void cleanWall(struct wall* wall);
 
 #endif
