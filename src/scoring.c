@@ -25,25 +25,23 @@ void scanForTriplets(struct hand* hand) {
      * In-place iterates through the hand and
      * turns any sequentially found triplets into melds
      */
-    struct handTile* cursor = hand->tilesHead;
-    struct handTile* anchor = 0;
-    struct handTile* current = cursor;
+    struct handTile* cursor = hand->tilesHead;  // the leading cursor that moves first and is compared against
+    struct handTile* anchor = 0;                // keeps track of the node before a triplet that will need its next updated
+    struct handTile* previous = cursor;          // tracks the previous node in each triplet
     uint8_t numCurrent = 0;
     uint8_t hasAka = 0;
     while (cursor != 0) {
-        if ((cursor->value & (SUIT_MASK + VALUE_MASK)) == (current->value & (SUIT_MASK+VALUE_MASK))) {
+        // if the cursor's tile has the same non-aka value as the previous one
+        if ((cursor->value & (SUIT_MASK + VALUE_MASK)) == (previous->value & (SUIT_MASK+VALUE_MASK))) {
             if (cursor->value & IS_AKA)
                 hasAka = 1;
             numCurrent++;
-            current = cursor;
-
-            renderTile(current->value);
-            printf("%hu", numCurrent);
+            previous = cursor;
 
             if (numCurrent == 3) {
                 // Create and add a new meld to the hand
                 struct meld* newMeld = malloc(sizeof(struct meld));
-                newMeld->headTile = current->value & ~IS_AKA;
+                newMeld->headTile = previous->value & ~IS_AKA;
                 newMeld->data = MELD_TRIPLET + MELD_CLOSED;
 
                 if (hasAka)
@@ -54,11 +52,13 @@ void scanForTriplets(struct hand* hand) {
                 hand->nMelds++;
 
                 cursor = cursor->next;
-                current = cursor;
+                previous = cursor;
 
+                // set up to remove triplet
                 struct handTile* deleter;
                 struct handTile* toDelete;
 
+                // handle case where first tile is part of a triplet
                 if (anchor == 0) {
                     deleter = hand->tilesHead;
                     hand->tilesHead = cursor;
@@ -68,6 +68,7 @@ void scanForTriplets(struct hand* hand) {
                     anchor->next = cursor;
                 }
 
+                // delete nodes
                 while(deleter != cursor) {
                     toDelete = deleter;
                     deleter = deleter->next;
@@ -78,31 +79,20 @@ void scanForTriplets(struct hand* hand) {
                 hasAka = 0;
 
             } else {
-                renderTile(current->value);
-                printf(" has only %hu, looking at ", numCurrent);
-                renderTile(cursor->value);
-                printf("\n");
-                current = cursor;
+                previous = cursor;
                 cursor = cursor->next;
-                printf("Now looking at ");
-                if (cursor != 0)
-                    renderTile(cursor->value);
-                else
-                    printf("null");
-                printf("\n");
             }
         } else {
-            anchor = current;
+            anchor = previous;
             numCurrent = 0;
             hasAka = 0;
-            cursor = cursor->next;
-            current = cursor;
+            previous = cursor;
         }
     }
 }
 
 void scanForSequences(struct hand* hand) {
-
+    
 }
 
 uint8_t isTenpai(struct hand* hand) {
