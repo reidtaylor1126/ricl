@@ -46,7 +46,7 @@ int main(int argc, const char* argv[]) {
     renderHand(myHand);
     printf("\n");
 
-    scanForTriplets(myHand);
+    extractTriplets(myHand);
 
     renderHand(myHand);
     printf("\n");

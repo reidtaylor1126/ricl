@@ -20,7 +20,7 @@ uint8_t hasSevenPairs(struct hand* hand) {
     return numNotPaired == 0;
 }
 
-void scanForTriplets(struct hand* hand) {
+void extractTriplets(struct hand* hand) {
     /**
      * In-place iterates through the hand and
      * turns any sequentially found triplets into melds
@@ -91,9 +91,35 @@ void scanForTriplets(struct hand* hand) {
     }
 }
 
-void scanForSequences(struct hand* hand) {
+
+
+void extractSequences(struct hand* hand) {
     
 }
+
+/** 
+* TODO use weighted interval scheduling algorithm to find tenpai
+* identify all possible triplets and sequences
+* store last index of meld in 0-terminated arrays
+* concatenate arrays
+* sort arrays
+* iterate through, choosing the first meld that does not overlap previous
+* if 4 melds, then tenpai
+* if 3 melds, search for pairs
+*   - if 2 pairs, tenpai, add both pair values to waits
+*   - if 1 pair
+*       - if other 2 are sequential, tenpai, add sequence members (if exist) to waits
+*       - else, noten
+*   - else, noten
+* else, noten
+*
+* run iteration again but backwards
+* merge waits
+* 
+* 7 pairs: identify all pairs, if 1 left then tenpai
+*
+* 13 orphans: for each tile: if the next tile is not the same or the next honor, set flag. if flag already set, then noten. 
+*/ 
 
 uint8_t isTenpai(struct hand* hand) {
 

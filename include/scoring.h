@@ -3,7 +3,7 @@
 
 #include "hand.h"
 
-void scanForTriplets(struct hand* hand);
+void extractTriplets(struct hand* hand);
 uint8_t isTenpai(struct hand* hand);
 
 #endif
