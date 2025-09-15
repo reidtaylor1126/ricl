@@ -20,109 +20,101 @@ uint8_t hasSevenPairs(struct hand* hand) {
     return numNotPaired == 0;
 }
 
-void extractTriplets(struct hand* hand) {
-    /**
-     * In-place iterates through the hand and
-     * turns any sequentially found triplets into melds
-     */
-    struct handTile* cursor = hand->tilesHead;  // the leading cursor that moves first and is compared against
-    struct handTile* anchor = 0;                // keeps track of the node before a triplet that will need its next updated
-    struct handTile* previous = cursor;          // tracks the previous node in each triplet
-    uint8_t numCurrent = 0;
-    uint8_t hasAka = 0;
+uint8_t findTriplets(struct hand* hand, uint8_t* ends) {
+    ends[0] = 255;
+    if (hand->nClosed < 3)
+        return 0;
+        
+    struct handTile* cursor = hand->tilesHead;
+    uint8_t index = 0;
+    uint8_t numTriplets = 0;
+
     while (cursor != 0) {
-        // if the cursor's tile has the same non-aka value as the previous one
-        if ((cursor->value & (SUIT_MASK + VALUE_MASK)) == (previous->value & (SUIT_MASK+VALUE_MASK))) {
-            if (cursor->value & IS_AKA)
-                hasAka = 1;
-            numCurrent++;
-            previous = cursor;
-
-            if (numCurrent == 3) {
-                // Create and add a new meld to the hand
-                struct meld* newMeld = malloc(sizeof(struct meld));
-                newMeld->headTile = previous->value & ~IS_AKA;
-                newMeld->data = MELD_TRIPLET + MELD_CLOSED;
-
-                if (hasAka)
-                    newMeld->data += IS_AKA;
-
-                newMeld->next = hand->meldsHead;
-                hand->meldsHead = newMeld;
-                hand->nMelds++;
-
-                cursor = cursor->next;
-                previous = cursor;
-
-                // set up to remove triplet
-                struct handTile* deleter;
-                struct handTile* toDelete;
-
-                // handle case where first tile is part of a triplet
-                if (anchor == 0) {
-                    deleter = hand->tilesHead;
-                    hand->tilesHead = cursor;
-                }
-                else {
-                    deleter = anchor->next;
-                    anchor->next = cursor;
-                }
-
-                // delete nodes
-                while(deleter != cursor) {
-                    toDelete = deleter;
-                    deleter = deleter->next;
-                    free(toDelete);
-                }
-
-                numCurrent = 0;
-                hasAka = 0;
-
-            } else {
-                previous = cursor;
-                cursor = cursor->next;
-            }
-        } else {
-            anchor = previous;
-            numCurrent = 0;
-            hasAka = 0;
-            previous = cursor;
+        if ((cursor->data & HANDTILE_COUNT_MASK) > 2) {
+            ends[numTriplets] = index + 0x80;
+            numTriplets++;
+            ends[numTriplets] = 255;
         }
+
+        index++;
+        cursor = cursor->next;
     }
+    return numTriplets;
 }
 
+uint8_t findSequences(struct hand* hand, uint8_t* ends) {
+    ends[0] = 255;
+    if (hand->nClosed < 3)
+        return 0;
 
+    struct handTile* anchor = hand->tilesHead;
+    struct handTile* cursor = anchor->next;
+    char nextExpected = (anchor->value & ~IS_AKA)+1;
+    uint8_t fewestInSeq = 255;
+    uint8_t seqLength = 1;
+    uint8_t numSequences = 0;
+    uint8_t index = 0;
 
-void extractSequences(struct hand* hand) {
-    
+    while (cursor != 0 && !(anchor->value & IS_HONOR)) {
+        if ((cursor->value & ~IS_AKA) == nextExpected) {
+            seqLength++;
+            if ((cursor->data & HANDTILE_COUNT_MASK) < fewestInSeq)
+                fewestInSeq = cursor->data & HANDTILE_COUNT_MASK;
+            if (seqLength == 3) {
+                for (int i = 0; i < fewestInSeq; i++) {
+                    ends[numSequences] = index;
+                    numSequences++;
+                }
+                ends[numSequences] = 255;
+                anchor = anchor->next;
+                cursor = anchor->next;
+                nextExpected = (anchor->value & ~IS_AKA)+1;
+                fewestInSeq = 255;
+                seqLength = 1;
+                index++;
+            } else {
+                nextExpected++;
+                cursor = cursor->next;
+            }
+        } else if ((cursor->value & ~IS_AKA) > nextExpected) {
+            anchor = anchor->next;
+            cursor = anchor->next;
+                nextExpected = (anchor->value & ~IS_AKA)+1;
+            fewestInSeq = 255;
+            seqLength = 1;
+            index++;
+        }
+    }
+
+    return numSequences;
 }
 
 /** 
-* TODO use weighted interval scheduling algorithm to find tenpai
-* identify all possible triplets and sequences
-* store last index of meld in 0-terminated arrays
-* concatenate arrays
-* sort arrays
-* iterate through, choosing the first meld that does not overlap previous
-* if 4 melds, then tenpai
-* if 3 melds, search for pairs
-*   - if 2 pairs, tenpai, add both pair values to waits
-*   - if 1 pair
-*       - if other 2 are sequential, tenpai, add sequence members (if exist) to waits
-*       - else, noten
-*   - else, noten
-* else, noten
-*
-* run iteration again but backwards
-* merge waits
-* 
-* 7 pairs: identify all pairs, if 1 left then tenpai
-*
-* 13 orphans: for each tile: if the next tile is not the same or the next honor, set flag. if flag already set, then noten. 
+ * TODO use weighted interval scheduling algorithm to find tenpai
+ * identify all possible triplets and sequences
+ * store last index of meld in 0-terminated arrays
+ * concatenate arrays
+ * sort arrays
+ * iterate through, choosing the first meld that does not overlap previous
+ * if 4 melds, then tenpai
+ * if 3 melds, search for pairs
+ *   - if 2 pairs, tenpai, add both pair values to waits
+ *   - if 1 pair
+ *       - if other 2 are sequential, tenpai, add sequence members (if exist) to waits
+ *       - else, noten
+ *   - else, noten
+ * else, noten
+ *
+ * run iteration again but backwards
+ * merge waits
+ * 
+ * 7 pairs: identify all pairs, if 1 left then tenpai
+ *
+ * 13 orphans: for each tile: if the next tile is not the same or the next honor, set flag. if flag already set, then noten. 
 */ 
 
-uint8_t isTenpai(struct hand* hand) {
-
+uint8_t findWaits(struct hand* hand, char* waits) {
+    
 
     return 0;
 }

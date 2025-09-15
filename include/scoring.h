@@ -3,7 +3,8 @@
 
 #include "hand.h"
 
-void extractTriplets(struct hand* hand);
-uint8_t isTenpai(struct hand* hand);
+uint8_t findTriplets(struct hand* hand, uint8_t* ends);
+uint8_t findSequences(struct hand* hand, uint8_t* ends);
+uint8_t findWaits(struct hand* hand, char* waits);
 
 #endif

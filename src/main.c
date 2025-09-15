@@ -16,39 +16,51 @@ int main(int argc, const char* argv[]) {
 
     // destroyTable(myTable);
 
-    char tiles[] = {
+    unsigned char tiles[] = {
+        0b00010001,
+        0b00010001,
+        0b00010001,
+        0b00010010,
+        0b00010011,
+        0b00010100,
+        0b00010101,
         0b10010101,
-        0b00110010,
         0b00010101,
-        0b00110010,
-        0b00010101,
-        0b00110010,
-        0b01100001,
-        0b01100011,
-        0b01100010,
-        0b00101001,
-        0b00100110
+        0b00010110,
+        0b00010110,
+        0b00010111,
+        0b00010111,
     };
 
     struct hand* myHand = malloc(sizeof(struct hand));
 
-    for (int i = 0; i < 11; i++) {
+    for (int i = 0; i < 12; i++) {
         addTileToHand(myHand, tiles[i]);
     }
 
-    struct meld* myMeld = malloc(sizeof(struct meld));
-    myMeld->data = MELD_CLOSED + MELD_KAN;
-    myMeld->headTile = IS_DRAGON + 1;
+    // struct meld* myMeld = malloc(sizeof(struct meld));
+    // myMeld->data = MELD_CLOSED + MELD_KAN;
+    // myMeld->headTile = IS_DRAGON + 1;
 
-    myHand->meldsHead = myMeld;
-    myHand->nMelds = 1;
+    // myHand->meldsHead = myMeld;
+    // myHand->nMelds = 1;
 
     renderHand(myHand);
     printf("\n");
 
-    extractTriplets(myHand);
+    uint8_t possibleMelds[16];
 
-    renderHand(myHand);
+    uint8_t nTriplets = findTriplets(myHand, possibleMelds);
+
+    printf("Found %hu triplets\n", nTriplets);
+
+    uint8_t nSequences = findSequences(myHand, &possibleMelds[nTriplets]);
+    
+    printf("Found %hu sequences\n", nSequences);
+
+    for (int i = 0; possibleMelds[i] != 255 && i < 16; i++) {
+        printf("%x, ", possibleMelds[i]);
+    }
     printf("\n");
 
     destroyHand(myHand);
