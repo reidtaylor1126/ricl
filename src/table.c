@@ -72,17 +72,24 @@ void handleAwaitDraw(struct table* table, struct player* currentPlayer) {
 
 void handleDiscard(struct table* table, struct player* currentPlayer) {
     int inputBuffer = 0;
+    printf("Discard which tile? > ");
+    fflush(NULL);
     scanf("%d", &inputBuffer);
+    printf("Got %d ", inputBuffer);
     char tile;
-    if (inputBuffer > 1 && inputBuffer < currentPlayer->nDiscards) {
-        tile = removeFromHand(currentPlayer->hand, inputBuffer-1);
+    if (inputBuffer > 0 && (inputBuffer & 255) < currentPlayer->hand->nClosed) {
+        printf("Discarding tile %hu from hand! ", (inputBuffer & 255)-1);
+        tile = removeFromHand(currentPlayer->hand, (inputBuffer&255)-1);
     } else if (currentPlayer->hand->drawn != 0 && inputBuffer == 0) {
+        printf("Discarding drawn tile! ");
         tile = currentPlayer->hand->drawn;
         currentPlayer->hand->drawn = 0;
     } else {
         printf("\a");
         return;
     }
+    printf("Discarding ");
+    renderTile(tile);
     struct discard* newDiscard = addDiscard(currentPlayer, tile);
     table->lastDiscard = newDiscard;
     currentPlayer->turnStage = NOT_TURN;
@@ -100,6 +107,7 @@ void handleAwaitAction(struct table* table, struct player* currentPlayer) {
     int inputBuffer = 0;
     printf("(1) Discard | (2): Riichi | (3): Tsumo | (4): Kan | > ");
     scanf("%d", &inputBuffer);
+    fflush(NULL);
     switch (inputBuffer) {
         case ACTION_DISCARD:
             handleDiscard(table, currentPlayer);

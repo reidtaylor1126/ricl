@@ -28,6 +28,7 @@ int addTileToHand(struct hand* hand, unsigned char tile) {
             newHandTile->value = tile & ~IS_AKA;
             newHandTile->data = (tile & IS_AKA) + 1;
             newHandTile->next = cursor;
+            hand->nUniqueClosed++;
             if (follower == 0) 
                 hand->tilesHead = newHandTile;
             else
@@ -47,18 +48,43 @@ int addTileToHand(struct hand* hand, unsigned char tile) {
 
 char removeFromHand(struct hand* hand, uint8_t index) {
     struct handTile* remove = hand->tilesHead;
-    if (index == 0) {
-        hand->tilesHead = remove->next;
-    } else {
-        struct handTile* previous;
-        for (int i = 1; i < index; i++) {
-            previous = remove;
-            remove = remove->next;
+    struct handTile* previous = 0;
+    int i = 0;
+    while (remove != 0 && i < hand->nClosed) {
+        if (i == index) {
+            printf("Found exact! ");
+            break;
+        } else {
+            i += remove->data & HANDTILE_COUNT_MASK;
+
+            // if this handTile is the one we're searching for but there's more than 1
+            if (i > index) {
+                break;
+                printf("Found offset!");
+            } else {
+                previous = remove;
+                remove = remove->next;
+            }
         }
-        previous->next = remove->next;
     }
+
+    remove->data--;
+
     char value = remove->value;
-    free(remove);
+    if (remove->data & IS_AKA && i == index) {
+        value += IS_AKA;
+        remove->data -= IS_AKA;
+    }
+
+    if ((remove->data & HANDTILE_COUNT_MASK) == 0) {
+        if (previous == 0)
+            hand->tilesHead = remove->next;
+        else
+            previous->next = remove->next;
+        free(remove);
+        hand->nUniqueClosed--;
+    }
+    hand->nClosed--;
     return value;
 }
 
@@ -68,7 +94,7 @@ uint8_t countInHand(struct hand* hand, unsigned char tile) {
     
     for (struct handTile* cursor = hand->tilesHead; cursor != 0; cursor = cursor->next) {
         if ((cursor->value & ~IS_AKA) == (tile & ~IS_AKA)) {
-            count++;
+            count += cursor->data & HANDTILE_COUNT_MASK;
         } else if ((cursor->value & ~IS_AKA) > (tile & ~IS_AKA)) {
             return count;
         }
@@ -132,14 +158,14 @@ void renderMeld(struct meld* meld) {
 void renderHand(struct hand* hand) {
     struct handTile* tileCursor = hand->tilesHead;
     while (tileCursor != 0) {
-        // for (int i = 0; i < (tileCursor->data & HANDTILE_COUNT_MASK); i++) {
-        //     if (tileCursor->data & IS_AKA && i == 0)
-        //         renderTile(tileCursor->value + IS_AKA);
-        //     else
-        //         renderTile(tileCursor->value);
-        // }
-        renderTile(tileCursor->value);
-        printf("(%hu)", tileCursor->data & HANDTILE_COUNT_MASK);
+        for (int i = 0; i < (tileCursor->data & HANDTILE_COUNT_MASK); i++) {
+            if (tileCursor->data & IS_AKA && i == 0)
+                renderTile(tileCursor->value + IS_AKA);
+            else
+                renderTile(tileCursor->value);
+        }
+        if (tileCursor->next != 0 && (tileCursor->value & SUIT_MASK) != (tileCursor->next->value & SUIT_MASK))
+            printf(" ");
         tileCursor = tileCursor->next;
     }
     if (hand->drawn != 0) {

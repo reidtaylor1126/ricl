@@ -46,6 +46,7 @@ struct hand {
     struct handTile* tilesHead;
     struct meld* meldsHead;
     uint8_t nClosed;    // number of closed tiles
+    uint8_t nUniqueClosed;
     uint8_t nMelds;      // number of open melds, not tiles
     char drawn;
 };

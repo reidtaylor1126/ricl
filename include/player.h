@@ -12,9 +12,9 @@
 #define ACTION_KAN (4)
 #define ACTION_RON (5)
 
-#define ACTION_DISCARD '1'
-#define ACTION_RIICHI '2'
-#define ACTION_TSUMO '3'
+#define ACTION_DISCARD (1)
+#define ACTION_RIICHI (2)
+#define ACTION_TSUMO (3)
 
 #define NOT_TURN (0)
 #define AWAITING_DRAW (1)

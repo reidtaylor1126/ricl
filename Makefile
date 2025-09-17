@@ -1,10 +1,11 @@
 CC = gcc
 CFLAGS = -Wall
 ODIR = target
+OUT = target/ricl
 INC = -Iinclude
 
 main: target/main.o target/tiles.o target/hand.o target/wall.o target/player.o target/table.o target/scoring.o
-		$(CC) target/main.o target/tiles.o target/hand.o target/wall.o target/player.o target/table.o target/scoring.o -o target/ricl
+		$(CC) $(CFLAGS) target/main.o target/tiles.o target/hand.o target/wall.o target/player.o target/table.o target/scoring.o -o target/ricl
 
 target/main.o: src/main.c 
 		$(CC) -c $(INC) $(CFLAGS) src/main.c -o target/main.o
