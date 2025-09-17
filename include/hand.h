@@ -63,6 +63,7 @@ char openKan(struct hand* hand, unsigned char tile);
 void renderMeld(struct meld* meld);
 void renderHand(struct hand* hand);
 void destroyHand(struct hand* hand);
+struct handTile* closedAsArray(struct hand* hand);
 struct hand* cloneHandWithout(struct hand* hand, uint8_t index);
 
 #endif

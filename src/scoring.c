@@ -50,7 +50,7 @@ uint8_t findSequences(struct hand* hand, uint8_t* ends) {
     struct handTile* anchor = hand->tilesHead;
     struct handTile* cursor = anchor->next;
     char nextExpected = (anchor->value & ~IS_AKA)+1;
-    uint8_t fewestInSeq = 255;
+    uint8_t fewestInSeq = anchor->data & HANDTILE_COUNT_MASK;
     uint8_t seqLength = 1;
     uint8_t numSequences = 0;
     uint8_t index = 0;
@@ -69,7 +69,7 @@ uint8_t findSequences(struct hand* hand, uint8_t* ends) {
                 anchor = anchor->next;
                 cursor = anchor->next;
                 nextExpected = (anchor->value & ~IS_AKA)+1;
-                fewestInSeq = 255;
+                fewestInSeq = anchor->data & HANDTILE_COUNT_MASK;
                 seqLength = 1;
                 index++;
             } else {
@@ -80,7 +80,7 @@ uint8_t findSequences(struct hand* hand, uint8_t* ends) {
             anchor = anchor->next;
             cursor = anchor->next;
                 nextExpected = (anchor->value & ~IS_AKA)+1;
-            fewestInSeq = 255;
+            fewestInSeq = anchor->data & HANDTILE_COUNT_MASK;
             seqLength = 1;
             index++;
         }

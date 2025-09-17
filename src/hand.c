@@ -132,12 +132,14 @@ void renderMeld(struct meld* meld) {
 void renderHand(struct hand* hand) {
     struct handTile* tileCursor = hand->tilesHead;
     while (tileCursor != 0) {
-        for (int i = 0; i < (tileCursor->data & HANDTILE_COUNT_MASK); i++) {
-            if (tileCursor->data & IS_AKA && i == 0)
-                renderTile(tileCursor->value + IS_AKA);
-            else
-                renderTile(tileCursor->value);
-        }
+        // for (int i = 0; i < (tileCursor->data & HANDTILE_COUNT_MASK); i++) {
+        //     if (tileCursor->data & IS_AKA && i == 0)
+        //         renderTile(tileCursor->value + IS_AKA);
+        //     else
+        //         renderTile(tileCursor->value);
+        // }
+        renderTile(tileCursor->value);
+        printf("(%hu)", tileCursor->data & HANDTILE_COUNT_MASK);
         tileCursor = tileCursor->next;
     }
     if (hand->drawn != 0) {

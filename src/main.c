@@ -34,7 +34,7 @@ int main(int argc, const char* argv[]) {
 
     struct hand* myHand = malloc(sizeof(struct hand));
 
-    for (int i = 0; i < 12; i++) {
+    for (int i = 0; i < 13; i++) {
         addTileToHand(myHand, tiles[i]);
     }
 
