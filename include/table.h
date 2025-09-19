@@ -16,11 +16,13 @@ struct table {
     uint8_t riichiCount;
     uint8_t honbaCount;
     uint8_t prevailingWind;
+    uint8_t gameRunning;
 };
 
 struct table* createTable();
 void deal(struct table* table, uint8_t advanceDealer);
-void tickTurn(struct table* table);
+int tickTurn(struct table* table);
+void advanceTurn(struct table* table);
 void printTable(struct table* table);
 void destroyTable(struct table* table);
 

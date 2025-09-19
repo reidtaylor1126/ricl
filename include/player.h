@@ -33,8 +33,8 @@
  * 5 discarding (or riichiing)
 */
 
-#define DISCARD_CALLED (1);
-#define DISCARD_RIICHI (2);
+#define DISCARD_CALLED (1)
+#define DISCARD_RIICHI (2)
 
 struct discard {
     char tile;
@@ -54,6 +54,7 @@ struct player {
 void createPlayerIn(struct player* dest, char* name);
 struct player* createPlayer(char* name);
 struct discard* addDiscard(struct player* player, char tile);
+void renderDiscards(struct player* player);
 void destroyPlayer(struct player* player);
 
 #endif
