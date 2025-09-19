@@ -4,8 +4,8 @@ ODIR = target
 OUT = target/ricl
 INC = -Iinclude
 
-main: target/main.o target/tiles.o target/hand.o target/wall.o target/player.o target/table.o target/scoring.o target/cursor.o
-		$(CC) $(CFLAGS) target/main.o target/tiles.o target/hand.o target/wall.o target/player.o target/table.o target/scoring.o target/cursor.o -o target/ricl
+main: target/main.o target/tiles.o target/hand.o target/wall.o target/player.o target/table.o target/scoring.o target/cursor.o target/turns.o
+		$(CC) $(CFLAGS) target/main.o target/tiles.o target/hand.o target/wall.o target/player.o target/table.o target/scoring.o target/cursor.o target/turns.o -o target/ricl
 
 target/main.o: src/main.c 
 		$(CC) -c $(INC) $(CFLAGS) src/main.c -o target/main.o
@@ -30,6 +30,9 @@ target/scoring.o: src/scoring.c
 
 target/cursor.o: src/cursor.c
 		$(CC) -c $(INC) $(CFLAGS) src/cursor.c -o target/cursor.o
+
+target/turns.o: src/turns.c
+		$(CC) -c $(INC) $(CFLAGS) src/turns.c -o target/turns.o
 
 clean: 
 	rm -f $(ODIR)/*.o $(OUT)

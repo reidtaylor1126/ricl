@@ -53,7 +53,9 @@ struct hand {
 
 struct hand* createHand();
 int addTileToHand(struct hand* hand, unsigned char tile);
-char removeFromHand(struct hand* hand, uint8_t index);
+int addDrawnToHand(struct hand* hand);
+char removeFromHand(struct hand* hand, uint8_t index, uint8_t count);
+char removeTileFromHand(struct hand* hand, char tile, uint8_t count);
 uint8_t countInHand(struct hand* hand, unsigned char tile);
 uint8_t countOpenMelds(struct hand* hand);
 char pon(struct hand* hand, unsigned char tile);
@@ -61,9 +63,11 @@ char chi(struct hand* hand, unsigned char lowTile);
 char chiOptions(struct hand* hand, unsigned char tile);
 char closedKan(struct hand* hand, unsigned char tile);
 char openKan(struct hand* hand, unsigned char tile);
+void addMeld(struct hand* hand, char headTile, char data);
 void renderMeld(struct meld* meld);
 void renderHand(struct hand* hand);
 void destroyHand(struct hand* hand);
+struct handTile* getHandTileAt(struct hand* hand, uint8_t index);
 struct handTile* closedAsArray(struct hand* hand);
 struct hand* cloneHandWithout(struct hand* hand, uint8_t index);
 

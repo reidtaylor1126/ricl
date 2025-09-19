@@ -89,6 +89,36 @@ uint8_t findSequences(struct hand* hand, uint8_t* ends) {
     return numSequences;
 }
 
+uint8_t findSequencesFor(struct hand* hand, char tile, char* heads) {
+    /**
+     * TODO change function to fill in heads buffer with the available tile head values
+     * returning the number of heads picked
+     */
+    if (tile & IS_HONOR)
+        return 0;
+
+    uint8_t tileExistsRegister = 0;
+    uint8_t bitCursor = 16;
+    char tileTarget = (tile & ~IS_AKA) - 2;
+    struct handTile* tileCursor = hand->tilesHead;
+
+    while (tileCursor != 0 && bitCursor > 0) {
+        if ((tileCursor->value & ~IS_AKA) == tileTarget) {
+            tileExistsRegister |= bitCursor;
+            tileTarget++;
+            bitCursor >>= 1;
+            tileCursor = tileCursor->next;
+        } else if ((tileCursor->value & ~IS_AKA) > tileTarget) {
+            tileTarget++;
+            bitCursor >>= 1;
+        } else {
+            tileCursor = tileCursor->next;
+        }
+    }
+
+    return tileExistsRegister;
+}
+
 /** 
  * TODO use weighted interval scheduling algorithm to find tenpai
  * identify all possible triplets and sequences

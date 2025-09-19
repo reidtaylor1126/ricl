@@ -27,14 +27,13 @@ void renderCalledTile(char t) {
 
 void newDiscardRow(uint8_t hOffset) {
     // printf(CURSOR_DOWN);
-    printf("\n");
-    moveCursor(CURSOR_RIGHT, hOffset);
+    printf("\n"CURSOR_RIGHT, hOffset);
     fflush(stdout);
 }
 
 void renderDiscards(struct player* player) {
     for (int i = 0; i < player->nDiscards; i++) {
-        if (i % 6 == 0)
+        if (i % 6 == 0 && i > 0)
             newDiscardRow(24);
         if (player->discards[i].data & DISCARD_CALLED)
             renderCalledTile(player->discards[i].tile);

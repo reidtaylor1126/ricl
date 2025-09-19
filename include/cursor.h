@@ -4,12 +4,14 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#define CURSOR_UP       "\033[1A"
-#define CURSOR_DOWN     "\033[1B"
-#define CURSOR_RIGHT    "\033[1C"
-#define CURSOR_LEFT     "\033[1D"
+#define CURSOR_UP       "\033[%dA"
+#define CURSOR_DOWN     "\033[%dB"
+#define CURSOR_RIGHT    "\033[%dC"
+#define CURSOR_LEFT     "\033[%dD"
 
-void moveCursor(char* direction, uint8_t spaces);
+void clearScreen();
+void moveCursorTo(uint8_t x, uint8_t y);
 void eraseNextN(uint8_t nCols);
+void printBlockAt(char* buffer, uint8_t x, uint8_t y, uint8_t nRows, uint8_t cPerRow);
 
 #endif

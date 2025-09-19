@@ -1,6 +1,8 @@
 #include "main.h"
 #include "table.h"
+#include "turns.h"
 #include "scoring.h"
+#include "cursor.h"
 
 int main(int argc, const char* argv[]) {
     srand(time(NULL));

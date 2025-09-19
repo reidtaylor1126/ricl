@@ -21,8 +21,6 @@ struct table {
 
 struct table* createTable();
 void deal(struct table* table, uint8_t advanceDealer);
-int tickTurn(struct table* table);
-void advanceTurn(struct table* table);
 void printTable(struct table* table);
 void destroyTable(struct table* table);
 

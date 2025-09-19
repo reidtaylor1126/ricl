@@ -46,13 +46,18 @@ int addTileToHand(struct hand* hand, unsigned char tile) {
     }
 }
 
-char removeFromHand(struct hand* hand, uint8_t index) {
+int addDrawnToHand(struct hand* hand) {
+    int addedAt = addTileToHand(hand, hand->drawn);
+    hand->drawn = 0;
+    return addedAt;
+}
+
+char removeFromHand(struct hand* hand, uint8_t index, uint8_t count) {
     struct handTile* remove = hand->tilesHead;
     struct handTile* previous = 0;
     int i = 0;
     while (remove != 0 && i < hand->nClosed) {
         if (i == index) {
-            printf("Found exact! ");
             break;
         } else {
             i += remove->data & HANDTILE_COUNT_MASK;
@@ -60,7 +65,6 @@ char removeFromHand(struct hand* hand, uint8_t index) {
             // if this handTile is the one we're searching for but there's more than 1
             if (i > index) {
                 break;
-                printf("Found offset!");
             } else {
                 previous = remove;
                 remove = remove->next;
@@ -68,7 +72,7 @@ char removeFromHand(struct hand* hand, uint8_t index) {
         }
     }
 
-    remove->data--;
+    remove->data -= count;
 
     char value = remove->value;
     if (remove->data & IS_AKA && i == index) {
@@ -84,23 +88,43 @@ char removeFromHand(struct hand* hand, uint8_t index) {
         free(remove);
         hand->nUniqueClosed--;
     }
-    hand->nClosed--;
+    hand->nClosed -= count;
     return value;
 }
 
-// TODO remove this function and handle evaluation in the pon and kan functions (return status)
-uint8_t countInHand(struct hand* hand, unsigned char tile) {
-    uint8_t count = 0;
-    
-    for (struct handTile* cursor = hand->tilesHead; cursor != 0; cursor = cursor->next) {
-        if ((cursor->value & ~IS_AKA) == (tile & ~IS_AKA)) {
-            count += cursor->data & HANDTILE_COUNT_MASK;
-        } else if ((cursor->value & ~IS_AKA) > (tile & ~IS_AKA)) {
-            return count;
+char removeTileFromHand(struct hand* hand, char tile, uint8_t count) {
+    struct handTile* remove = hand->tilesHead;
+    struct handTile* previous = 0;
+    uint8_t i = 0;
+    while (remove != 0) {
+        if (remove->value == (tile & ~IS_AKA)) {
+            break;
+        } else if (remove->value > (tile & ~IS_AKA)) {
+            return 0;
         }
+        i += remove->data & HANDTILE_COUNT_MASK;
+        previous = remove;
+        remove = remove->next;
     }
 
-    return count;
+    remove->data -= count;
+
+    char value = remove->value;
+    if (remove->data & IS_AKA) {
+        value += IS_AKA;
+        remove->data -= IS_AKA;
+    }
+
+    if ((remove->data & HANDTILE_COUNT_MASK) == 0) {
+        if (previous == 0)
+            hand->tilesHead = remove->next;
+        else
+            previous->next = remove->next;
+        free(remove);
+        hand->nUniqueClosed--;
+    }
+    hand->nClosed -= count;
+    return value;
 }
 
 char pon(struct hand* hand, unsigned char tile) {
@@ -119,6 +143,14 @@ char chiOptions(struct hand* hand, unsigned char tile) {
 char closedKan(struct hand* hand, unsigned char tile) {
     return 0;
 
+}
+
+void addMeld(struct hand* hand, char headTile, char data) {
+    struct meld* newMeld = malloc(sizeof(struct meld));
+    newMeld->headTile = headTile;
+    newMeld->data = data;
+    newMeld->next = hand->meldsHead;
+    hand->meldsHead = newMeld;
 }
 
 void renderMeld(struct meld* meld) {
@@ -202,6 +234,17 @@ void destroyHand(struct hand* hand) {
     }
 
     free(hand);
+}
+
+struct handTile* getHandTileAt(struct hand* hand, uint8_t index) {
+    struct handTile* cursor = hand->tilesHead;
+    uint8_t counted = 0;
+
+    while (cursor != 0) {
+        counted += cursor->data & HANDTILE_COUNT_MASK;
+        if (counted > index)
+            return cursor;
+    }
 }
 
 struct hand* cloneHandWithout(struct hand* hand, uint8_t index) {
