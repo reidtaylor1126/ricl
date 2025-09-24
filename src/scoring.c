@@ -89,11 +89,7 @@ uint8_t findSequences(struct hand* hand, uint8_t* ends) {
     return numSequences;
 }
 
-uint8_t findSequencesFor(struct hand* hand, char tile, char* heads) {
-    /**
-     * TODO change function to fill in heads buffer with the available tile head values
-     * returning the number of heads picked
-     */
+uint8_t findSequencesFor(struct hand* hand, char tile) {
     if (tile & IS_HONOR)
         return 0;
 
@@ -115,6 +111,12 @@ uint8_t findSequencesFor(struct hand* hand, char tile, char* heads) {
             tileCursor = tileCursor->next;
         }
     }
+
+    if ((tileExistsRegister & SEQUENCE_ABOVE_MASK) == SEQUENCE_ABOVE_MASK ||
+        (tileExistsRegister & SEQUENCE_CENTER_MASK) == SEQUENCE_CENTER_MASK ||
+        (tileExistsRegister & SEQUENCE_BELOW_MASK) == SEQUENCE_BELOW_MASK) {
+            tileExistsRegister |= HAS_SEQUENCE;
+        }
 
     return tileExistsRegister;
 }

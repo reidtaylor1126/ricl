@@ -1,70 +1,16 @@
 #include "turns.h"
 #include "scoring.h"
 
-int handleAwaitDraw(struct table* table, struct player* currentPlayer) {
-    char inputBuffer[4];
-    if (currentPlayer->didRiichi)
-        printf("(1) Draw | (5): Ron | (q): Quit | > ");
-    else
-        printf("(1) Draw | (2): Pon | (3): Chi | (4): Kan | (5): Ron | (q): Quit | > ");
-    fflush(stdout);
-    scanf("%s", inputBuffer);
-
-    if (inputBuffer[0] == 'q') {
-        printf("Quitting!\n");
-        table->gameRunning = 0;
-        return 0;
-    }
-
-    int inputNumber = atoi(inputBuffer);
-    switch (inputNumber & 255) {
-        case ACTION_DRAW:
-            char drawn = draw(table->wall);
-            currentPlayer->hand->drawn = drawn;
-            printf("\033[2A\r");
-            renderHand(currentPlayer->hand);
-            printf("\n");
-            currentPlayer->turnStage = HAS_14TH_TILE;
-            break;
-        case ACTION_PON:
-            if (countInHand(currentPlayer->hand, table->lastDiscard->tile) > 1) {
-                table->lastDiscard->data = DISCARD_CALLED;
-                pon(currentPlayer->hand, table->lastDiscard->tile);
-                currentPlayer->turnStage = DISCARDING;
-            } else {
-                printf("\a");
-            }
-            break;
-        case ACTION_CHI:
-            char options = chiOptions(currentPlayer->hand, table->lastDiscard->tile);
-            if (options == 0) {
-                printf("\a");
-            } else {
-                printf("Enter bottom of chi: ");
-                fflush(stdout);
-                scanf("%s", inputBuffer);
-            }
-        case ACTION_KAN:
-            if (countInHand(currentPlayer->hand, table->lastDiscard->tile) > 2) {
-                table->lastDiscard->data = DISCARD_CALLED;
-                closedKan(currentPlayer->hand, table->lastDiscard->tile);
-            } else {
-                printf("\a");
-            }
-        case ACTION_RON:
-            // TODO
-            break;
-        default:
-            printf("Invalid input!\n");
-            break;
-    }
-    return 1;
+void rerenderHand(struct hand* hand) {
+    printf(CURSOR_UP"\r", 1);
+    renderHand(hand);
+    printf("\n");
 }
 
 void handleDiscard(struct table* table, struct player* currentPlayer) {
     char inputBuffer[4];
     printf(CURSOR_UP"\rDiscard which tile? > ", 1);
-    eraseNextN(36);
+    eraseNextN(48);
     scanf("%s", inputBuffer);
     
     int inputNumber = atoi(inputBuffer);
@@ -87,15 +33,133 @@ void handleDiscard(struct table* table, struct player* currentPlayer) {
     currentPlayer->turnStage = NOT_TURN;
 }
 
+void handlePon(struct table* table, struct player* currentPlayer) {
+    char targetTile = table->lastDiscard->tile;
+    char tilesFromHand = removeTileFromHand(currentPlayer->hand, targetTile & ~IS_AKA, 2, 1);
+    if (tilesFromHand != 0) {
+        table->lastDiscard->data |= DISCARD_CALLED;
+        addMeld(currentPlayer->hand, targetTile & ~IS_AKA, MELD_TRIPLET + ((targetTile | tilesFromHand) & IS_AKA));
+        rerenderHand(currentPlayer->hand);
+        printf("\n");
+        currentPlayer->turnStage = DISCARDING;
+    } else {
+        printf("\a");
+    }
+}
+
 void handleChi(struct table* table, struct player* currentPlayer) {
     if (table->lastDiscard->tile & IS_HONOR) {
-        printf("\a");
+        printf("Cannot chi ");
+        renderTile(table->lastDiscard->tile);
+        printf("\n");
         return;
     }
 
-    char headsBuffer[3];
-    uint8_t sequenceImprint = findSequencesFor(currentPlayer->hand, table->lastDiscard->tile, headsBuffer);
+    currentPlayer->hand->drawn = table->lastDiscard->tile;
 
+    uint8_t sequenceImprint = findSequencesFor(currentPlayer->hand, table->lastDiscard->tile);
+
+    if (! (sequenceImprint & HAS_SEQUENCE)) {
+        printf("No sequences in hand for tile!\n");
+        return;
+    } else {
+        currentPlayer->hand->drawn = table->lastDiscard->tile;
+        rerenderHand(currentPlayer->hand);
+    }
+
+    currentPlayer->turnStage = CHOOSING_CHI;
+}
+
+void chooseChi(struct table* table, struct player* currentPlayer) {
+    uint8_t sequenceImprint = findSequencesFor(currentPlayer->hand, table->lastDiscard->tile);
+    printf("Sequence imprint: %hu\n", sequenceImprint);
+
+    char inputBuffer[4];
+    printf("\rChi starting with which tile > ");
+    eraseNextN(36);
+    scanf("%s", inputBuffer);
+    uint8_t inputNumber = atoi(inputBuffer) & 255;
+
+    char headValue = 0;    
+    if (inputNumber == 0) 
+        headValue = currentPlayer->hand->drawn;
+    else if (inputNumber > 0 && inputNumber < currentPlayer->hand->nClosed) {
+        struct handTile* headTile = getHandTileAt(currentPlayer->hand, inputNumber-1);
+        headValue = headTile->value;
+    } else { // invalid index
+        currentPlayer->hand->drawn = 0;
+        printf("Index out of range!\n");
+        return;
+    }
+
+    headValue &= ~IS_AKA;
+    int headDistance = (table->lastDiscard->tile & ~IS_AKA) - (headValue);
+    printf("Head distance: %d\n", headDistance);
+    if (headDistance < 0 || headDistance > 2) {
+        currentPlayer->hand->drawn = 0;
+        printf("Invalid index!\n");
+        return ;
+    } else {
+        int toRemove[2];
+        switch (headDistance) {
+            case 0:
+                if ((sequenceImprint & SEQUENCE_ABOVE_MASK) == SEQUENCE_ABOVE_MASK) {
+                    toRemove[0] = 1;
+                    toRemove[1] = 2;
+                } else {
+                    currentPlayer->hand->drawn = 0;
+                    printf("Invalid chi start!\n");
+                    return;
+                }
+                break;
+            case 1:
+                if ((sequenceImprint & SEQUENCE_CENTER_MASK) == SEQUENCE_CENTER_MASK) {
+                    toRemove[0] = -1;
+                    toRemove[1] = 1;
+                } else {
+                    currentPlayer->hand->drawn = 0;
+                    printf("Invalid chi start!\n");
+                    return;
+                }
+                break;
+            case 2:
+                if ((sequenceImprint & SEQUENCE_BELOW_MASK) == SEQUENCE_BELOW_MASK) {
+                    toRemove[0] = -2;
+                    toRemove[1] = -1;
+                } else {
+                    currentPlayer->hand->drawn = 0;
+                    printf("Invalid chi start!\n");
+                    return;
+                }
+                break;
+            default:
+                currentPlayer->hand->drawn = 0;
+                printf("Invalid index!\n");
+                return;
+        }
+        char meldData = MELD_SEQUENCE;
+        for (int i = 0; i < 2; i++) {
+            printf("%d ", i);
+            char removedTile = removeTileFromHand(currentPlayer->hand, currentPlayer->hand->drawn + toRemove[i], 1, 1);
+            printf("Removed ");
+            renderTile(removedTile);
+            printf(" from hand!\n");
+            renderHand(currentPlayer->hand);
+            printf("\n");
+            meldData |= removedTile & IS_AKA;
+        }
+        
+        meldData |= currentPlayer->hand->drawn & IS_AKA;
+
+        addMeld(currentPlayer->hand, headValue, meldData);
+
+        currentPlayer->hand->drawn = 0;
+
+        rerenderHand(currentPlayer->hand);
+        printf("\n");
+
+        currentPlayer->turnStage = DISCARDING;
+    }
 }
 
 void handleRiichi(struct table* table, struct player* currentPlayer) {
@@ -111,7 +175,6 @@ void handleClosedKan(struct table* table, struct player* currentPlayer) {
     printf(CURSOR_UP"\rKan which tile? > ", 1);
     eraseNextN(36);
     scanf("%s", inputBuffer);
-    
     uint8_t inputNumber = atoi(inputBuffer) & 255;
 
     if (inputNumber > currentPlayer->hand->nClosed) {
@@ -119,20 +182,57 @@ void handleClosedKan(struct table* table, struct player* currentPlayer) {
         return;
     }
 
-    struct handTile* targetHandTile = getHandTileAt(currentPlayer->hand, inputNumber);
-    char tileValue = targetHandTile->value & (~IS_AKA);
-    uint8_t tileData = targetHandTile->data;
-    uint8_t tileCount = tileData & HANDTILE_COUNT_MASK;
-    if (tileCount == 4 || (tileCount == 3 && tileValue == currentPlayer->hand->drawn & (!IS_AKA))) {
-        removeFromHand(currentPlayer->hand, inputNumber, tileCount);
-        addMeld(currentPlayer->hand, tileValue, MELD_KAN + MELD_CLOSED);
-        currentPlayer->hand->meldsHead->data += tileData & IS_AKA;
+    if (closedKan(currentPlayer->hand, inputNumber)) {
         char drawn = kanDraw(table->wall);
         currentPlayer->hand->drawn = drawn;
         currentPlayer->turnStage = HAS_14TH_TILE;
-        printf("\033[2A\r");
-        renderHand(currentPlayer->hand);
+        rerenderHand(currentPlayer->hand);
+    } else {
+        printf("\a");
+        return;
     }
+}
+
+int handleAwaitDraw(struct table* table, struct player* currentPlayer) {
+    char inputBuffer[4];
+    if (currentPlayer->didRiichi)
+        printf("(1) Draw | (5): Ron | (q): Quit | > ");
+    else
+        printf("(1) Draw | (2): Pon | (3): Chi | (4): Kan | (5): Ron | (q): Quit | > ");
+    fflush(stdout);
+    scanf("%s", inputBuffer);
+
+    if (inputBuffer[0] == 'q') {
+        printf("Quitting!\n");
+        table->gameRunning = 0;
+        return 0;
+    }
+
+    int inputNumber = atoi(inputBuffer);
+    switch (inputNumber & 255) {
+        case ACTION_DRAW:
+            char drawn = draw(table->wall);
+            currentPlayer->hand->drawn = drawn;
+            printf(CURSOR_UP, 1);
+            rerenderHand(currentPlayer->hand);
+            currentPlayer->turnStage = HAS_14TH_TILE;
+            break;
+        case ACTION_PON:
+            handlePon(table, currentPlayer);
+            break;
+        case ACTION_CHI:
+            handleChi(table, currentPlayer);
+            break;
+        case ACTION_KAN:
+            // TODO
+        case ACTION_RON:
+            // TODO
+            break;
+        default:
+            printf("Invalid input!\n");
+            break;
+    }
+    return 1;
 }
 
 int handleAwaitAction(struct table* table, struct player* currentPlayer) {
@@ -178,8 +278,11 @@ int tickTurn(struct table* table) {
         if (handleAwaitAction(table, currentPlayer) == 0)
             return 0;
     }
+    if (currentPlayer->turnStage == CHOOSING_CHI) {
+        chooseChi(table, currentPlayer);
+    }   
     if (currentPlayer->turnStage == DISCARDING) {
-        // TODO
+        handleDiscard(table, currentPlayer);
     }
     return 1;
 }

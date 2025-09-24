@@ -1,4 +1,5 @@
 #include "hand.h"
+#include "cursor.h"
 
 struct hand* createHand() {
     struct hand* newHand = malloc(sizeof(struct hand));
@@ -52,6 +53,21 @@ int addDrawnToHand(struct hand* hand) {
     return addedAt;
 }
 
+char getTileFromHand(struct hand* hand, uint8_t index) {
+    struct handTile* cursor = hand->tilesHead;
+    uint8_t i = 0;
+    while (cursor != 0) {
+        if (i == index) {
+            return cursor->value + (cursor->data & IS_AKA);
+        } else if (i > index){
+            return cursor->value;
+        }
+        i += cursor->data & HANDTILE_COUNT_MASK;
+        cursor = cursor->next;
+    }
+    return 0;
+}
+
 char removeFromHand(struct hand* hand, uint8_t index, uint8_t count) {
     struct handTile* remove = hand->tilesHead;
     struct handTile* previous = 0;
@@ -71,6 +87,9 @@ char removeFromHand(struct hand* hand, uint8_t index, uint8_t count) {
             }
         }
     }
+
+    if ((remove->data & ~IS_AKA) < count)
+        return 0;
 
     remove->data -= count;
 
@@ -92,7 +111,7 @@ char removeFromHand(struct hand* hand, uint8_t index, uint8_t count) {
     return value;
 }
 
-char removeTileFromHand(struct hand* hand, char tile, uint8_t count) {
+char removeTileFromHand(struct hand* hand, char tile, uint8_t count, uint8_t takeAka) {
     struct handTile* remove = hand->tilesHead;
     struct handTile* previous = 0;
     uint8_t i = 0;
@@ -107,10 +126,13 @@ char removeTileFromHand(struct hand* hand, char tile, uint8_t count) {
         remove = remove->next;
     }
 
+    if ((remove->data & ~IS_AKA) < count)
+        return 0;
+
     remove->data -= count;
 
     char value = remove->value;
-    if (remove->data & IS_AKA) {
+    if ((tile & IS_AKA || takeAka) && remove->data & IS_AKA) {
         value += IS_AKA;
         remove->data -= IS_AKA;
     }
@@ -140,9 +162,19 @@ char chiOptions(struct hand* hand, unsigned char tile) {
     return 0;
 }
 
-char closedKan(struct hand* hand, unsigned char tile) {
+char closedKan(struct hand* hand, uint8_t tileIndex) {
+    
+    struct handTile* targetHandTile = getHandTileAt(hand, tileIndex);
+    char tileValue = targetHandTile->value & (~IS_AKA);
+    uint8_t tileData = targetHandTile->data;
+    uint8_t tileCount = tileData & HANDTILE_COUNT_MASK;
+    if (tileCount == 4 || (tileCount == 3 && tileValue == (hand->drawn & !IS_AKA))) {
+        removeFromHand(hand, tileIndex, tileCount);
+        addMeld(hand, tileValue, MELD_KAN + MELD_CLOSED);
+        hand->meldsHead->data += tileData & IS_AKA;
+        return 1;
+    } 
     return 0;
-
 }
 
 void addMeld(struct hand* hand, char headTile, char data) {
@@ -169,7 +201,7 @@ void renderMeld(struct meld* meld) {
                 if (meld->data & IS_AKA && i == 1)
                     renderTile(meld->headTile + IS_AKA);
                 else
-                    renderTile(meld->headTile);
+                    renderTile(meld->headTile & ~IS_AKA);
             }
             break;
         case MELD_KAN:
@@ -200,18 +232,21 @@ void renderHand(struct hand* hand) {
             printf(" ");
         tileCursor = tileCursor->next;
     }
-    if (hand->drawn != 0) {
-        printf(" | ");
-        renderTile(hand->drawn);
-    }
-    // printf(" | %hu Melds: ", hand->nMelds);
     printf(" | ");
+    if (hand->drawn != 0) {
+        renderTile(hand->drawn);
+    } else 
+        printf("    ");
+    printf(" | ");
+    // printf(" | %hu Melds: ", hand->nMelds);
     struct meld* meldCursor = hand->meldsHead;
     while (meldCursor != 0) {
         renderMeld(meldCursor);
         printf(" ");
         meldCursor = meldCursor->next;
     }
+
+    eraseNextN(12);
 }
 
 void destroyHand(struct hand* hand) {
@@ -245,6 +280,8 @@ struct handTile* getHandTileAt(struct hand* hand, uint8_t index) {
         if (counted > index)
             return cursor;
     }
+    
+    return 0;
 }
 
 struct hand* cloneHandWithout(struct hand* hand, uint8_t index) {

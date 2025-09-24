@@ -3,13 +3,14 @@
 
 #include "hand.h"
 
-#define SEQUENCE_MASK_BELOW (24)
-#define SEQUENCE_MASK_CENTER (10)
-#define SEQUENCE_MASK_ABOVE (3)
+#define HAS_SEQUENCE (128)
+#define SEQUENCE_BELOW_MASK (24)
+#define SEQUENCE_CENTER_MASK (10)
+#define SEQUENCE_ABOVE_MASK (3)
 
 uint8_t findTriplets(struct hand* hand, uint8_t* ends);
 uint8_t findSequences(struct hand* hand, uint8_t* ends);
-uint8_t findSequencesFor(struct hand* hand, char tile, char* heads);
+uint8_t findSequencesFor(struct hand* hand, char tile);
 uint8_t findWaits(struct hand* hand, char* waits);
 
 #endif

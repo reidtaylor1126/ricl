@@ -1,6 +1,6 @@
 #include "tiles.h"
 
-char suitNames[] = {'!', 'm', 's', 'p', '!', 'D', 'W'};
+char suitNames[] = {'!', 'm', 's', 'p', '#', 'D', 'W'};
 char dragonValues[] = {'W', 'G', 'R'};
 char windValues[] = {'E', 'S', 'W', 'N'};
 
