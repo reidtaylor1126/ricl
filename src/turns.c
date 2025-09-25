@@ -18,7 +18,8 @@ void handleDiscard(struct table* table, struct player* currentPlayer) {
     char tile;
     if (inputNumber > 0 && (inputNumber & 255) <= currentPlayer->hand->nClosed) {
         tile = removeFromHand(currentPlayer->hand, (inputNumber & 255)-1, 1);
-        addDrawnToHand(currentPlayer->hand);
+        if (currentPlayer->hand->drawn != 0)
+            addDrawnToHand(currentPlayer->hand);
     } else if (currentPlayer->hand->drawn != 0 && inputNumber == 0) {
         tile = currentPlayer->hand->drawn;
         currentPlayer->hand->drawn = 0;
@@ -26,10 +27,10 @@ void handleDiscard(struct table* table, struct player* currentPlayer) {
         printf("\a");
         return;
     }
-    printf("Discarding ");
-    renderTile(tile);
     struct discard* newDiscard = addDiscard(currentPlayer, tile);
     table->lastDiscard = newDiscard;
+    printf("Discarding ");
+    renderTile(tile);
     currentPlayer->turnStage = NOT_TURN;
 }
 
@@ -62,9 +63,6 @@ void handleChi(struct table* table, struct player* currentPlayer) {
     if (! (sequenceImprint & HAS_SEQUENCE)) {
         printf("No sequences in hand for tile!\n");
         return;
-    } else {
-        currentPlayer->hand->drawn = table->lastDiscard->tile;
-        rerenderHand(currentPlayer->hand);
     }
 
     currentPlayer->turnStage = CHOOSING_CHI;
@@ -73,6 +71,14 @@ void handleChi(struct table* table, struct player* currentPlayer) {
 void chooseChi(struct table* table, struct player* currentPlayer) {
     uint8_t sequenceImprint = findSequencesFor(currentPlayer->hand, table->lastDiscard->tile);
     printf("Sequence imprint: %hu\n", sequenceImprint);
+
+    if (! (sequenceImprint & HAS_SEQUENCE)) {
+        printf("No sequences in hand for tile!\n");
+        return;
+    } else {
+        currentPlayer->hand->drawn = table->lastDiscard->tile;
+        rerenderHand(currentPlayer->hand);
+    }
 
     char inputBuffer[4];
     printf("\rChi starting with which tile > ");
@@ -94,7 +100,7 @@ void chooseChi(struct table* table, struct player* currentPlayer) {
 
     headValue &= ~IS_AKA;
     int headDistance = (table->lastDiscard->tile & ~IS_AKA) - (headValue);
-    printf("Head distance: %d\n", headDistance);
+    printf("Head distance between %x and %x = %d\n", currentPlayer->hand->drawn, headValue, headDistance);
     if (headDistance < 0 || headDistance > 2) {
         currentPlayer->hand->drawn = 0;
         printf("Invalid index!\n");

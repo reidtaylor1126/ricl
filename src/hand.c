@@ -48,6 +48,8 @@ int addTileToHand(struct hand* hand, unsigned char tile) {
 }
 
 int addDrawnToHand(struct hand* hand) {
+    if (hand->drawn == 0)
+        return -1;
     int addedAt = addTileToHand(hand, hand->drawn);
     hand->drawn = 0;
     return addedAt;
@@ -279,6 +281,7 @@ struct handTile* getHandTileAt(struct hand* hand, uint8_t index) {
         counted += cursor->data & HANDTILE_COUNT_MASK;
         if (counted > index)
             return cursor;
+        cursor = cursor->next;
     }
     
     return 0;

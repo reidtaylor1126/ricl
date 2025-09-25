@@ -15,6 +15,7 @@ struct player* createPlayer(char* name) {
 }
 
 struct discard* addDiscard(struct player* player, char tile) {
+    printf("Discard value: %x\n", tile);
     player->discards[player->nDiscards].tile = tile;
     return(&player->discards[player->nDiscards++]);
 }
