@@ -19,7 +19,7 @@ make clean
 
 ### Phase One
 
-- Auto shuffling and dealing  ✓
+- Auto shuffling and dealing ✓
 - Local hot-seat play
 - Call validation
 - End hand validation
@@ -39,11 +39,12 @@ make clean
 ## Current Progress
 
 - Shuffling and dealing - Done
-- Local play - gameplay functions in progress; UI in progress
+- Local play - gameplay functions in progress
   - Draw and discard - Done
-  - Pon - in progress
-  - Chi - in progress
+  - Pon - Done (except for turn interruption)
+  - Chi - Done
   - Kan - untested
   - Riichi - not started
-- Call validation - in progress
-
+- Call validation - Mostly done
+- UI - early progress
+- Networked play - not started
