@@ -10,12 +10,17 @@ make
 ./target/ricl
 ```
 
+To reset the build directory, run
+```
+make clean
+```
+
 ## Development Goals
 
 ### Phase One
 
+- Auto shuffling and dealing  ✓
 - Local hot-seat play
-- Auto shuffling and dealing
 - Call validation
 - End hand validation
 - Riichi
@@ -30,3 +35,15 @@ make
 
 - Auto-scoring?
 - UI improvement
+
+## Current Progress
+
+- Shuffling and dealing - Done
+- Local play - gameplay functions in progress; UI in progress
+  - Draw and discard - Done
+  - Pon - in progress
+  - Chi - in progress
+  - Kan - untested
+  - Riichi - not started
+- Call validation - in progress
+
