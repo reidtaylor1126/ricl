@@ -32,16 +32,26 @@ void newDiscardRow(uint8_t hOffset) {
     fflush(stdout);
 }
 
-void renderDiscards(struct player* player) {
-    for (int i = 0; i < player->nDiscards; i++) {
-        if (i % 6 == 0 && i > 0)
-            newDiscardRow(24);
-        if (player->discards[i].data & DISCARD_CALLED)
-            renderCalledTile(player->discards[i].tile);
+void renderDiscards(struct player* player, int start, int step, int nPerRow, int rowStep) {
+    uint8_t rowCount = 0;
+    int cursor = start;
+    for (int i = 0; i < DISCARD_CAPACITY; i++) {
+        struct discard* d = &player->discards[cursor];
+        if (d->tile == 0)
+            printf(".   ");
+        else if (d->data & DISCARD_CALLED)
+            renderCalledTile(d->tile);
         else
-            renderTile(player->discards[i].tile);
+            renderTile(d->tile);
+        rowCount++;
+        if (rowCount >= nPerRow) {
+            rowCount = 0;
+            cursor += rowStep;
+            printf(CURSOR_LEFT CURSOR_DOWN, 4*nPerRow, 1);
+        } else {
+            cursor += step;
+        }
     }
-    printf("\n");
 }
 
 void destroyPlayer(struct player* player) {

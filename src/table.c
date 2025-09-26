@@ -85,11 +85,36 @@ void printTable(struct table* table) {
         printf(ANSI_COLOR_RESET);
         if (table->players[i]->nDiscards > 0)
             printf(CURSOR_UP, 1);
-        renderDiscards(table->players[i]);
+        renderDiscards(table->players[i], 0, 1, 6, 0);
         printf(CURSOR_RIGHT, 8);
         renderHand(table->players[i]->hand);
     printf("\n");
     }
+}
+
+void renderTable(struct table* table, uint8_t playerPerspective) {
+    clearScreen();
+    
+    moveCursorTo(HAND_POSITION);
+    renderHand(table->players[table->playerTurn]->hand);
+    moveCursorTo(SELF_DISCARD_POSITION);
+    renderDiscards(table->players[table->playerTurn], 0, 1, 6, 1);
+
+    uint8_t nextPlayer = (table->playerTurn+1)%4;
+    renderRightHand(table->players[nextPlayer]->hand, 1);
+    moveCursorTo(RIGHT_DISCARD_POSITION);
+    renderDiscards(table->players[nextPlayer], 5, 6, 4, -19);
+
+    nextPlayer = (table->playerTurn+2)%4;
+    renderOppositeHand(table->players[nextPlayer]->hand, 1);
+    moveCursorTo(OPPOSITE_DISCARD_POSITION);
+    renderDiscards(table->players[nextPlayer], 23, -1, 6, -1);
+
+    nextPlayer = (table->playerTurn+3)%4;
+    renderLeftHand(table->players[nextPlayer]->hand, 1);
+    moveCursorTo(LEFT_DISCARD_POSITION);
+    renderDiscards(table->players[nextPlayer], 18, -6, 4, 19);
+    moveCursorTo(0, 24);
 }
 
 void destroyTable(struct table* table) {

@@ -22,6 +22,7 @@ struct table {
 struct table* createTable();
 void deal(struct table* table, uint8_t advanceDealer);
 void printTable(struct table* table);
+void renderTable(struct table* table, uint8_t playerPerspective);
 void destroyTable(struct table* table);
 
 #endif

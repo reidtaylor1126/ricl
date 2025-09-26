@@ -6,6 +6,11 @@
 
 #define DISCARD_CAPACITY (24)
 
+#define SELF_DISCARD_POSITION 32, 16
+#define RIGHT_DISCARD_POSITION 63, 8
+#define OPPOSITE_DISCARD_POSITION 32, 2
+#define LEFT_DISCARD_POSITION 6, 8
+
 /** 
  * Turn stages
  * 0 not player's turn
@@ -37,7 +42,7 @@ struct player {
 void createPlayerIn(struct player* dest, char* name);
 struct player* createPlayer(char* name);
 struct discard* addDiscard(struct player* player, char tile);
-void renderDiscards(struct player* player);
+void renderDiscards(struct player* player, int start, int step, int nPerRow, int rowStep);
 void destroyPlayer(struct player* player);
 
 #endif

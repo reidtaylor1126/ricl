@@ -3,6 +3,11 @@
 
 #include "tiles.h"
 
+#define HAND_POSITION 4, 20
+#define RIGHT_HAND_POSITION 80, 18
+#define OPPOSITE_HAND_POSITION 68, 0
+#define LEFT_HAND_POSITION 0, 4
+
 /**
  * handTile structure
  * data: X X X X X X X X
@@ -65,8 +70,11 @@ char chiOptions(struct hand* hand, unsigned char tile);
 char closedKan(struct hand* hand, uint8_t tileIndex);
 char openKan(struct hand* hand, unsigned char tile);
 void addMeld(struct hand* hand, char headTile, char data);
-void renderMeld(struct meld* meld);
+void renderMeld(struct meld* meld, char* sep);
 void renderHand(struct hand* hand);
+void renderLeftHand(struct hand* hand, uint8_t showClosed);
+void renderOppositeHand(struct hand* hand, uint8_t showClosed);
+void renderRightHand(struct hand* hand, uint8_t showClosed);
 void destroyHand(struct hand* hand);
 struct handTile* getHandTileAt(struct hand* hand, uint8_t index);
 struct handTile* closedAsArray(struct hand* hand);

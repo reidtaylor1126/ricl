@@ -187,7 +187,7 @@ void addMeld(struct hand* hand, char headTile, char data) {
     hand->meldsHead = newMeld;
 }
 
-void renderMeld(struct meld* meld) {
+void renderMeld(struct meld* meld, char* sep) {
     char tileToRender;
     switch (meld->data & MELD_TYPE_MASK) {
         case MELD_SEQUENCE:
@@ -196,6 +196,7 @@ void renderMeld(struct meld* meld) {
                 if ((meld->data & IS_AKA) && (tileToRender & VALUE_MASK) == 5)
                     tileToRender &= IS_AKA;
                 renderTile(tileToRender);
+                printf("%s", sep);
             }
             break;
         case MELD_TRIPLET:
@@ -204,6 +205,7 @@ void renderMeld(struct meld* meld) {
                     renderTile(meld->headTile + IS_AKA);
                 else
                     renderTile(meld->headTile & ~IS_AKA);
+                printf("%s", sep);
             }
             break;
         case MELD_KAN:
@@ -215,6 +217,7 @@ void renderMeld(struct meld* meld) {
                         renderTile(meld->headTile + IS_AKA);
                     else
                         renderTile(meld->headTile);
+                    printf("%s", sep);
                 }
             }
             break;
@@ -243,12 +246,107 @@ void renderHand(struct hand* hand) {
     // printf(" | %hu Melds: ", hand->nMelds);
     struct meld* meldCursor = hand->meldsHead;
     while (meldCursor != 0) {
-        renderMeld(meldCursor);
+        renderMeld(meldCursor, "");
         printf(" ");
         meldCursor = meldCursor->next;
     }
 
     eraseNextN(12);
+}
+
+void renderSideHand(struct hand* hand, uint8_t showClosed, char* sep) {
+    if (showClosed) {
+        struct handTile* tileCursor = hand->tilesHead;
+        while (tileCursor != 0) {
+            for (int i = 0; i < (tileCursor->data & HANDTILE_COUNT_MASK); i++) {
+                if (tileCursor->data & IS_AKA && i == 0)
+                    renderTile(tileCursor->value + IS_AKA);
+                else
+                    renderTile(tileCursor->value);
+                printf("%s", sep);
+            }
+            tileCursor = tileCursor->next;
+        }
+        printf("----%s", sep);
+        if (hand->drawn != 0) {
+            renderTile(hand->drawn);
+            printf("%s", sep);
+        }
+    } else {
+        for (int i = 0; i < hand->nClosed; i++) {
+            printf("[  ]%s", sep);
+        }
+        printf("----%s", sep);
+        if (hand->drawn != 0) 
+            printf("[  ]%s", sep);
+        else
+            printf("%s", sep);
+    }
+    printf("----%s", sep);
+
+    struct meld* meldCursor = hand->meldsHead;
+    while (meldCursor != 0) {
+        renderMeld(meldCursor, sep);
+        printf("%s", sep);
+        meldCursor = meldCursor->next;
+    }
+}
+void renderOppositeHand(struct hand* hand, uint8_t showClosed) {
+    moveCursorTo(OPPOSITE_HAND_POSITION);
+    if (showClosed) {
+        struct handTile* tileCursor = hand->tilesHead;
+        while (tileCursor != 0) {
+            for (int i = 0; i < (tileCursor->data & HANDTILE_COUNT_MASK); i++) {
+                if (tileCursor->data & IS_AKA && i == 0)
+                    renderTile(tileCursor->value + IS_AKA);
+                else
+                    renderTile(tileCursor->value);
+                printf(CURSOR_LEFT, 8);
+            }
+            tileCursor = tileCursor->next;
+        }
+
+        printf("  | "CURSOR_LEFT, 7);
+
+        if (hand->drawn != 0) {
+            renderTile(hand->drawn);
+            printf(CURSOR_LEFT, 8);
+        }
+    } else {
+        for (int i = 0; i < hand->nClosed; i++) {
+            printf("[   ]"CURSOR_LEFT, 8);
+        }
+        printf("  | "CURSOR_LEFT, 7);
+        if (hand->drawn != 0) 
+            printf("[   ]"CURSOR_LEFT, 8);
+        else
+            printf(CURSOR_LEFT, 4);
+    }
+    printf("  | "CURSOR_LEFT, 7);
+
+    struct meld* meldCursor = hand->meldsHead;
+    char* meldSep = malloc(16);
+    while (meldCursor != 0) {
+        renderMeld(meldCursor, meldSep);
+        printf(CURSOR_LEFT, 16);
+        meldCursor = meldCursor->next;
+    }
+    free(meldSep);
+}
+void renderLeftHand(struct hand* hand, uint8_t showClosed) { 
+    moveCursorTo(LEFT_HAND_POSITION);
+    char* sep = malloc(16);
+    sprintf(sep, CURSOR_LEFT CURSOR_DOWN, 4, 1);
+    renderSideHand(hand, showClosed, sep);
+    free(sep);
+}
+
+void renderRightHand(struct hand* hand, uint8_t showClosed) {
+    moveCursorTo(RIGHT_HAND_POSITION);
+    char* sep = malloc(16);
+    sprintf(sep, CURSOR_LEFT CURSOR_UP, 4, 1);
+    renderSideHand(hand, showClosed, sep);
+    free(sep);
 }
 
 void destroyHand(struct hand* hand) {

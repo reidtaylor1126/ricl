@@ -40,8 +40,9 @@ void handlePon(struct table* table, struct player* currentPlayer) {
     if (tilesFromHand != 0) {
         table->lastDiscard->data |= DISCARD_CALLED;
         addMeld(currentPlayer->hand, targetTile & ~IS_AKA, MELD_TRIPLET + ((targetTile | tilesFromHand) & IS_AKA));
-        rerenderHand(currentPlayer->hand);
-        printf("\n");
+        // rerenderHand(currentPlayer->hand);
+        renderTable(table, 0);
+        // printf("\n");
         currentPlayer->turnStage = DISCARDING;
     } else {
         printf("\a");
@@ -77,7 +78,8 @@ void chooseChi(struct table* table, struct player* currentPlayer) {
         return;
     } else {
         currentPlayer->hand->drawn = table->lastDiscard->tile;
-        rerenderHand(currentPlayer->hand);
+        // rerenderHand(currentPlayer->hand);
+        renderTable(table, 0);
     }
 
     char inputBuffer[4];
@@ -161,8 +163,9 @@ void chooseChi(struct table* table, struct player* currentPlayer) {
 
         currentPlayer->hand->drawn = 0;
 
-        rerenderHand(currentPlayer->hand);
-        printf("\n");
+        renderTable(table, 0);
+        // rerenderHand(currentPlayer->hand);
+        // printf("\n");
 
         currentPlayer->turnStage = DISCARDING;
     }
@@ -192,7 +195,8 @@ void handleClosedKan(struct table* table, struct player* currentPlayer) {
         char drawn = kanDraw(table->wall);
         currentPlayer->hand->drawn = drawn;
         currentPlayer->turnStage = HAS_14TH_TILE;
-        rerenderHand(currentPlayer->hand);
+        // rerenderHand(currentPlayer->hand);
+        renderTable(table, 0);
     } else {
         printf("\a");
         return;
@@ -205,7 +209,7 @@ int handleAwaitDraw(struct table* table, struct player* currentPlayer) {
         printf("(1) Draw | (5): Ron | (q): Quit | > ");
     else
         printf("(1) Draw | (2): Pon | (3): Chi | (4): Kan | (5): Ron | (q): Quit | > ");
-    fflush(stdout);
+    // fflush(stdout);
     scanf("%s", inputBuffer);
 
     if (inputBuffer[0] == 'q') {
@@ -219,8 +223,9 @@ int handleAwaitDraw(struct table* table, struct player* currentPlayer) {
         case ACTION_DRAW:
             char drawn = draw(table->wall);
             currentPlayer->hand->drawn = drawn;
-            printf(CURSOR_UP, 1);
-            rerenderHand(currentPlayer->hand);
+            // printf(CURSOR_UP, 1);
+            // rerenderHand(currentPlayer->hand);
+            renderTable(table, 0);
             currentPlayer->turnStage = HAS_14TH_TILE;
             break;
         case ACTION_PON:
@@ -242,13 +247,13 @@ int handleAwaitDraw(struct table* table, struct player* currentPlayer) {
 }
 
 int handleAwaitAction(struct table* table, struct player* currentPlayer) {
+    moveCursorTo(0, 24);
     char inputBuffer[4];
     if (currentPlayer->didRiichi) {
         printf("(1) Discard | (3): Tsumo | (4): Kan | > ");
     } else {
         printf("(1) Discard | (2): Riichi | (3): Tsumo | (4): Kan | > ");
     }
-    eraseNextN(30);
 
     scanf("%s", inputBuffer);
     int inputNumber = atoi(inputBuffer);
