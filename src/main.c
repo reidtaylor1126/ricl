@@ -6,8 +6,8 @@
 
 int main(int argc, const char* argv[]) {
     long seed = time(NULL);
-    srand(seed);
-    // srand(5432);
+    // srand(seed);
+    srand(1758948379);
 
     struct table* myTable = createTable();
 
@@ -27,7 +27,6 @@ int main(int argc, const char* argv[]) {
         }
     }
 
-    
     destroyTable(myTable);
     printf("Game seed was: %ld\n", seed);
 

@@ -3,7 +3,7 @@
 
 #include "tiles.h"
 
-#define HAND_POSITION 4, 20
+#define HAND_POSITION 8, 20
 #define RIGHT_HAND_POSITION 80, 18
 #define OPPOSITE_HAND_POSITION 68, 0
 #define LEFT_HAND_POSITION 0, 4

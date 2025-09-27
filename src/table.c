@@ -69,7 +69,7 @@ void advanceTurn(struct table* table) {
 }
 
 void printTable(struct table* table) {
-    printfall(table->wall);
+    printWall(table->wall);
     printf(" | %s\n", table->prevailingWind == 1 ? "South" : "East");
     for (int i = 0; i < 60; i++)
         printf("=");
@@ -101,19 +101,24 @@ void renderTable(struct table* table, uint8_t playerPerspective) {
     renderDiscards(table->players[table->playerTurn], 0, 1, 6, 1);
 
     uint8_t nextPlayer = (table->playerTurn+1)%4;
-    renderRightHand(table->players[nextPlayer]->hand, 1);
+    renderRightHand(table->players[nextPlayer]->hand, 0);
     moveCursorTo(RIGHT_DISCARD_POSITION);
     renderDiscards(table->players[nextPlayer], 5, 6, 4, -19);
 
     nextPlayer = (table->playerTurn+2)%4;
-    renderOppositeHand(table->players[nextPlayer]->hand, 1);
+    renderOppositeHand(table->players[nextPlayer]->hand, 0);
     moveCursorTo(OPPOSITE_DISCARD_POSITION);
     renderDiscards(table->players[nextPlayer], 23, -1, 6, -1);
 
     nextPlayer = (table->playerTurn+3)%4;
-    renderLeftHand(table->players[nextPlayer]->hand, 1);
+    renderLeftHand(table->players[nextPlayer]->hand, 0);
     moveCursorTo(LEFT_DISCARD_POSITION);
     renderDiscards(table->players[nextPlayer], 18, -6, 4, 19);
+
+    moveCursorTo(32, 11);
+    printf("%s" CURSOR_LEFT CURSOR_UP, table->prevailingWind == 1 ? "South" : "East ", 5, 1);
+    printWall(table->wall);
+
     moveCursorTo(0, 24);
 }
 

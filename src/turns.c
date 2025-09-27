@@ -1,12 +1,6 @@
 #include "turns.h"
 #include "scoring.h"
 
-void rerenderHand(struct hand* hand) {
-    printf(CURSOR_UP"\r", 1);
-    renderHand(hand);
-    printf("\n");
-}
-
 void handleDiscard(struct table* table, struct player* currentPlayer) {
     char inputBuffer[4];
     printf(CURSOR_UP"\rDiscard which tile? > ", 1);
@@ -45,7 +39,9 @@ void handlePon(struct table* table, struct player* currentPlayer) {
         // printf("\n");
         currentPlayer->turnStage = DISCARDING;
     } else {
-        printf("\a");
+        printf("Insufficient ");
+        renderTile(targetTile & ~IS_AKA);
+        printf(" in hand!");
     }
 }
 
@@ -78,6 +74,7 @@ void chooseChi(struct table* table, struct player* currentPlayer) {
         return;
     } else {
         currentPlayer->hand->drawn = table->lastDiscard->tile;
+        table->lastDiscard->data |= DISCARD_CALLED;
         // rerenderHand(currentPlayer->hand);
         renderTable(table, 0);
     }
@@ -149,11 +146,6 @@ void chooseChi(struct table* table, struct player* currentPlayer) {
         for (int i = 0; i < 2; i++) {
             printf("%d ", i);
             char removedTile = removeTileFromHand(currentPlayer->hand, currentPlayer->hand->drawn + toRemove[i], 1, 1);
-            printf("Removed ");
-            renderTile(removedTile);
-            printf(" from hand!\n");
-            renderHand(currentPlayer->hand);
-            printf("\n");
             meldData |= removedTile & IS_AKA;
         }
         
@@ -168,6 +160,23 @@ void chooseChi(struct table* table, struct player* currentPlayer) {
         // printf("\n");
 
         currentPlayer->turnStage = DISCARDING;
+    }
+}
+
+void handleOpenKan(struct table* table, struct player* currentPlayer) {
+    char targetTile = table->lastDiscard->tile;
+    char tilesFromHand = removeTileFromHand(currentPlayer->hand, targetTile & ~IS_AKA, 3, 1);
+    if (tilesFromHand != 0) {
+        table->lastDiscard->data |= DISCARD_CALLED;
+        addMeld(currentPlayer->hand, targetTile & ~IS_AKA, MELD_KAN + ((targetTile | tilesFromHand) & IS_AKA));
+        // rerenderHand(currentPlayer->hand);
+        renderTable(table, 0);
+        // printf("\n");
+        currentPlayer->turnStage = DISCARDING;
+    } else {
+        printf("Insufficient ");
+        renderTile(targetTile & ~IS_AKA);
+        printf(" in hand!");
     }
 }
 
@@ -235,7 +244,8 @@ int handleAwaitDraw(struct table* table, struct player* currentPlayer) {
             handleChi(table, currentPlayer);
             break;
         case ACTION_KAN:
-            // TODO
+            handleOpenKan(table, currentPlayer);
+            break;
         case ACTION_RON:
             // TODO
             break;

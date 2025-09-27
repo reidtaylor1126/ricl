@@ -280,17 +280,18 @@ void renderSideHand(struct hand* hand, uint8_t showClosed, char* sep) {
         if (hand->drawn != 0) 
             printf("[  ]%s", sep);
         else
-            printf("%s", sep);
+            printf("    %s", sep);
     }
     printf("----%s", sep);
 
     struct meld* meldCursor = hand->meldsHead;
     while (meldCursor != 0) {
         renderMeld(meldCursor, sep);
-        printf("%s", sep);
+        // printf("%s", sep);
         meldCursor = meldCursor->next;
     }
 }
+
 void renderOppositeHand(struct hand* hand, uint8_t showClosed) {
     moveCursorTo(OPPOSITE_HAND_POSITION);
     if (showClosed) {
@@ -314,11 +315,11 @@ void renderOppositeHand(struct hand* hand, uint8_t showClosed) {
         }
     } else {
         for (int i = 0; i < hand->nClosed; i++) {
-            printf("[   ]"CURSOR_LEFT, 8);
+            printf("[  ]" CURSOR_LEFT, 8);
         }
-        printf("  | "CURSOR_LEFT, 7);
+        printf("  | " CURSOR_LEFT, 7);
         if (hand->drawn != 0) 
-            printf("[   ]"CURSOR_LEFT, 8);
+            printf("[  ]" CURSOR_LEFT, 8);
         else
             printf(CURSOR_LEFT, 4);
     }
