@@ -25,4 +25,9 @@ void printTable(struct table* table);
 void renderTable(struct table* table, uint8_t playerPerspective);
 void destroyTable(struct table* table);
 
+void setTurn(struct table* table, uint8_t playerIndex);
+void advanceTurn(struct table* table);
+uint8_t waitForNextReady(struct table* table);
+uint8_t playerCanPon(struct table* table);
+
 #endif

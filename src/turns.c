@@ -2,12 +2,17 @@
 #include "scoring.h"
 
 void handleDiscard(struct table* table, struct player* currentPlayer) {
-    char inputBuffer[4];
-    printf(CURSOR_UP"\rDiscard which tile? > ", 1);
-    eraseNextN(48);
-    scanf("%s", inputBuffer);
+    // char inputBuffer[4];
+    // printf(CURSOR_UP"\rDiscard which tile? > ", 1);
+    // eraseNextN(48);
+    // scanf("%s", inputBuffer);
     
-    int inputNumber = atoi(inputBuffer);
+    // int inputNumber = atoi(inputBuffer);
+
+    char* prompt = malloc(32);
+    sprintf(prompt, CURSOR_UP"\rDiscard which tile? > ", 1);
+    int inputNumber = inputInt(prompt, 48);
+    free(prompt);
 
     char tile;
     if (inputNumber > 0 && (inputNumber & 255) <= currentPlayer->hand->nClosed) {
@@ -79,11 +84,13 @@ void chooseChi(struct table* table, struct player* currentPlayer) {
         renderTable(table, 0);
     }
 
-    char inputBuffer[4];
-    printf("\rChi starting with which tile > ");
-    eraseNextN(36);
-    scanf("%s", inputBuffer);
-    uint8_t inputNumber = atoi(inputBuffer) & 255;
+    // char inputBuffer[4];
+    // printf("\rChi starting with which tile > ");
+    // eraseNextN(36);
+    // scanf("%s", inputBuffer);
+    // uint8_t inputNumber = atoi(inputBuffer) & 255;
+
+    uint8_t inputNumber = inputInt("\rChi starting with which tile > ", 24);
 
     char headValue = 0;    
     if (inputNumber == 0) 
@@ -184,8 +191,6 @@ void handleRiichi(struct table* table, struct player* currentPlayer) {
     int inputBuffer = 0;
     scanf("%d", &inputBuffer);
     struct hand* testHand = cloneHandWithout(currentPlayer->hand, inputBuffer);
-    
-    free(testHand);
 }
 
 void handleClosedKan(struct table* table, struct player* currentPlayer) {
@@ -258,15 +263,21 @@ int handleAwaitDraw(struct table* table, struct player* currentPlayer) {
 
 int handleAwaitAction(struct table* table, struct player* currentPlayer) {
     moveCursorTo(0, 24);
-    char inputBuffer[4];
-    if (currentPlayer->didRiichi) {
-        printf("(1) Discard | (3): Tsumo | (4): Kan | > ");
-    } else {
-        printf("(1) Discard | (2): Riichi | (3): Tsumo | (4): Kan | > ");
-    }
 
-    scanf("%s", inputBuffer);
-    int inputNumber = atoi(inputBuffer);
+    // char inputBuffer[4];
+    // if (currentPlayer->didRiichi) {
+    //     printf("(1) Discard | (3): Tsumo | (4): Kan | > ");
+    // } else {
+    //     printf("(1) Discard | (2): Riichi | (3): Tsumo | (4): Kan | > ");
+    // }
+
+    // scanf("%s", inputBuffer);
+    // int inputNumber = atoi(inputBuffer);
+
+    char* prompt = "(1) Discard | (2): Riichi | (3): Tsumo | (4): Kan | > ";
+    if (currentPlayer->didRiichi)
+        prompt = "(1) Discard | (3): Tsumo | (4): Kan | > ";
+    uint8_t inputNumber = inputInt(prompt, 0);
 
     switch (inputNumber) {
         case ACTION_DISCARD:
@@ -306,4 +317,25 @@ int tickTurn(struct table* table) {
         handleDiscard(table, currentPlayer);
     }
     return 1;
+}
+
+void handleSkippingPon(struct table* table, uint8_t playerData) {
+    moveCursorTo(0, 24);
+    table->playerTurn = playerData & 3;
+    uint8_t inputNumber;
+    while (1) {
+        if (playerData & CAN_KAN) {
+            moveCursorTo(24, 14);
+            inputNumber = inputInt("\r(2) Pon | (4) Kan | > ", 24);
+        } else {
+            inputNumber = 2;
+        }
+        if (inputNumber == 2) {
+            handlePon(table, table->players[playerData & 3]);
+            break;
+        } else if (inputNumber == 4) {
+            handleOpenKan(table, table->players[playerData & 3]);
+            break;
+        }
+    }
 }

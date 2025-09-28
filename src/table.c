@@ -61,10 +61,14 @@ void deal(struct table* table, uint8_t advanceDealer) {
     table->gameRunning = 1;
 }
 
+void setTurn(struct table* table, uint8_t playerIndex) {
+    table->playerTurn = playerIndex;
+    printf("\nIt is now %s's turn!\n", table->players[playerIndex]->name);
+}
+
 void advanceTurn(struct table* table) {
     uint8_t nextPlayer = (table->playerTurn + 1) % 4;
-    table->playerTurn = nextPlayer;
-    printf("\nIt is now %s's turn!\n", table->players[nextPlayer]->name);
+    setTurn(table, nextPlayer);
     table->players[nextPlayer]->turnStage = AWAITING_DRAW;
 }
 
@@ -130,4 +134,60 @@ void destroyTable(struct table* table) {
     free(table->wall);
     free(table->tileSet);
     free(table);
+}
+
+uint8_t playerCanPon(struct table* table) {
+    uint8_t playerHasOne = 0;
+    for (int i = 0; i < 4; i++) {
+        uint8_t tileCount = countInHand(table->players[i]->hand, table->lastDiscard->tile);
+        if (tileCount == 1) {
+            if (playerHasOne == 1)
+                return 255;
+            playerHasOne++;
+        } else if (tileCount == 2) {
+            return i;
+        } else if (tileCount == 3) {
+            return i + 4;
+        }
+    }
+    return 255;
+}
+
+uint8_t waitForNextReady(struct table* table) {
+    clearScreen();
+    
+    uint8_t nextPlayer = (table->playerTurn+1) % 4;
+    char* nextName = table->players[nextPlayer]->name;
+    moveCursorTo(32, 8);
+    printf("%s plays next.\n", nextName);
+    
+    moveCursorTo(24, 10);
+    printf("Last player discarded: ");
+    renderTile(table->lastDiscard->tile);
+    printf("\n");
+    
+    uint8_t canPon = playerCanPon(table);
+    // if a player can pon and they are not the previous player
+    if (canPon != 255 && (canPon & 3) != table->playerTurn) {
+        moveCursorTo(24, 12);
+        printf("!! A player can call the discarded tile !!");
+        
+        moveCursorTo(24, 14);
+        uint8_t input = inputInt("(1) Call | (0) Ignore | > ", 24);
+
+        if (input == 0) {
+            advanceTurn(table);
+            return 1;
+        } else if (input == 1) {
+            handleSkippingPon(table, canPon);
+            return 1;
+        } else {
+            return 0;
+        }
+    } 
+
+    moveCursorTo(24, 14);
+    inputInt("Ready? > ", 0);
+    advanceTurn(table);
+    return 1;
 }

@@ -1,9 +1,5 @@
 #include "cursor.h"
 
-void clearScreen() {
-    printf("\033[2J");
-}
-
 void moveCursorTo(uint8_t x, uint8_t y) {
         printf("\033[%hu;%huH", y, x);
 }
@@ -15,6 +11,13 @@ void eraseNextN(uint8_t nCols) {
     printf("\033[%huD", nCols);
 }
 
+void clearScreen() {
+    for (int i = 1; i <= N_ROWS; i++) {
+        moveCursorTo(1, i);
+        eraseNextN(N_COLS);
+    }
+}
+
 void printBlockAt(char* buffer, uint8_t x, uint8_t y, uint8_t nRows, uint8_t cPerRow) {
     for (int r = 0; r < nRows; r++) {
         printf("\033[%hu;%huH", y+r, x);
@@ -22,4 +25,13 @@ void printBlockAt(char* buffer, uint8_t x, uint8_t y, uint8_t nRows, uint8_t cPe
             putchar(buffer[(r*cPerRow)+c]);
         }
     }
+}
+
+uint8_t inputInt(char* prompt, uint8_t clearCols) {
+    char inputBuffer[4];
+    printf("%s ", prompt);
+    eraseNextN(clearCols);
+    scanf("%s", inputBuffer);
+    uint8_t inputNumber = atoi(inputBuffer) & 255;
+    return inputNumber;
 }

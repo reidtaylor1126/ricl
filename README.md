@@ -21,7 +21,7 @@ make clean
 
 - Auto shuffling and dealing ✓
 - Local hot-seat play
-- Call validation
+- Call validation ✓
 - End hand validation
 - Riichi
 - No scoring
@@ -46,5 +46,5 @@ make clean
   - Kan - untested
   - Riichi - not started
 - Call validation - Mostly done
-- UI - early progress
+- UI - Basic UI mostly done
 - Networked play - not started

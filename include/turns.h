@@ -22,7 +22,9 @@
 #define CHOOSING_CHI (3)
 #define DISCARDING (5)
 
+#define CAN_KAN (4)
+
 int tickTurn(struct table* table);
-void advanceTurn(struct table* table);
+void handleSkippingPon(struct table* table, uint8_t playerData);
 
 #endif

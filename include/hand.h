@@ -62,7 +62,7 @@ int addDrawnToHand(struct hand* hand);
 char getTileFromHand(struct hand* hand, uint8_t index);
 char removeFromHand(struct hand* hand, uint8_t index, uint8_t count);
 char removeTileFromHand(struct hand* hand, char tile, uint8_t count, uint8_t takeAka);
-uint8_t countInHand(struct hand* hand, unsigned char tile);
+uint8_t countInHand(struct hand* hand, char tile);
 uint8_t countOpenMelds(struct hand* hand);
 char pon(struct hand* hand, unsigned char tile);
 char chi(struct hand* hand, unsigned char lowTile);

@@ -20,7 +20,9 @@ int main(int argc, const char* argv[]) {
         tickTurn(myTable);
         struct player* currentPlayer = myTable->players[myTable->playerTurn];
         if (currentPlayer->turnStage == NOT_TURN)  {
-            advanceTurn(myTable);
+            
+            while (! waitForNextReady(myTable));
+            
             // renderDiscards(myTable->players[myTable->playerTurn]);
             renderTable(myTable, 0);
             moveCursorTo(0, 24);

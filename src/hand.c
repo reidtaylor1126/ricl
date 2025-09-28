@@ -70,6 +70,18 @@ char getTileFromHand(struct hand* hand, uint8_t index) {
     return 0;
 }
 
+uint8_t countInHand(struct hand* hand, char tile) {
+    struct handTile* cursor = hand->tilesHead;
+    while(cursor != 0) {
+        if ((cursor->value & ~IS_AKA) == (tile & ~IS_AKA))
+            return cursor->data & HANDTILE_COUNT_MASK;
+        else if ((cursor->value & ~IS_AKA) > (tile & ~IS_AKA))
+            return 0;
+        cursor = cursor->next;
+    }
+    return 0;
+}
+
 char removeFromHand(struct hand* hand, uint8_t index, uint8_t count) {
     struct handTile* remove = hand->tilesHead;
     struct handTile* previous = 0;
@@ -327,13 +339,15 @@ void renderOppositeHand(struct hand* hand, uint8_t showClosed) {
 
     struct meld* meldCursor = hand->meldsHead;
     char* meldSep = malloc(16);
+    sprintf(meldSep, CURSOR_LEFT, 8);
     while (meldCursor != 0) {
         renderMeld(meldCursor, meldSep);
-        printf(CURSOR_LEFT, 16);
+        printf(CURSOR_LEFT, 2);
         meldCursor = meldCursor->next;
     }
     free(meldSep);
 }
+
 void renderLeftHand(struct hand* hand, uint8_t showClosed) { 
     moveCursorTo(LEFT_HAND_POSITION);
     char* sep = malloc(16);
