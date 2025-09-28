@@ -92,21 +92,22 @@ void chooseChi(struct table* table, struct player* currentPlayer) {
 
     uint8_t inputNumber = inputInt("\rChi starting with which tile > ", 24);
 
-    char headValue = 0;    
+    // moveCursorTo(1, 32);
+
+    unsigned char headValue = 0;
     if (inputNumber == 0) 
-        headValue = currentPlayer->hand->drawn;
+        headValue = currentPlayer->hand->drawn & ~IS_AKA & 255;
     else if (inputNumber > 0 && inputNumber < currentPlayer->hand->nClosed) {
         struct handTile* headTile = getHandTileAt(currentPlayer->hand, inputNumber-1);
-        headValue = headTile->value;
+        headValue = headTile->value & ~IS_AKA & 255;
     } else { // invalid index
         currentPlayer->hand->drawn = 0;
         printf("Index out of range!\n");
         return;
     }
 
-    headValue &= ~IS_AKA;
-    int headDistance = (table->lastDiscard->tile & ~IS_AKA) - (headValue);
-    printf("Head distance between %x and %x = %d\n", currentPlayer->hand->drawn, headValue, headDistance);
+    int headDistance = (table->lastDiscard->tile & ~IS_AKA & 255) - (headValue & 255);
+    // printf("Head distance between %x and %x = %d\n", currentPlayer->hand->drawn, headValue, headDistance);
     if (headDistance < 0 || headDistance > 2) {
         currentPlayer->hand->drawn = 0;
         printf("Invalid index!\n");
@@ -158,7 +159,7 @@ void chooseChi(struct table* table, struct player* currentPlayer) {
         
         meldData |= currentPlayer->hand->drawn & IS_AKA;
 
-        addMeld(currentPlayer->hand, headValue, meldData);
+        addMeld(currentPlayer->hand, headValue & ~IS_AKA, meldData);
 
         currentPlayer->hand->drawn = 0;
 

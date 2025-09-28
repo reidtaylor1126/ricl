@@ -163,19 +163,6 @@ char removeTileFromHand(struct hand* hand, char tile, uint8_t count, uint8_t tak
     return value;
 }
 
-char pon(struct hand* hand, unsigned char tile) {
-    return 0;
-}
-
-char chi(struct hand* hand, unsigned char lowTile) {
-    return 0;
-
-}
-
-char chiOptions(struct hand* hand, unsigned char tile) {
-    return 0;
-}
-
 char closedKan(struct hand* hand, uint8_t tileIndex) {
     
     struct handTile* targetHandTile = getHandTileAt(hand, tileIndex);
@@ -206,8 +193,9 @@ void renderMeld(struct meld* meld, char* sep) {
             for (uint8_t i = 0; i < 3; i++) {
                 tileToRender = meld->headTile+i;
                 if ((meld->data & IS_AKA) && (tileToRender & VALUE_MASK) == 5)
-                    tileToRender &= IS_AKA;
-                renderTile(tileToRender);
+                    renderTile(tileToRender | IS_AKA);
+                else
+                    renderTile(tileToRender);
                 printf("%s", sep);
             }
             break;
