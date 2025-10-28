@@ -163,9 +163,43 @@ char removeTileFromHand(struct hand* hand, char tile, uint8_t count, uint8_t tak
     return value;
 }
 
+struct handTile* findInHand(struct hand* hand, char tile) {
+    struct handTile* cursor = hand->tilesHead;
+    while (1) {
+        if (cursor->data == (tile & ~IS_AKA) || cursor == 0)
+            return cursor;
+        cursor = cursor->next;
+    }
+}
+
+char upgradeToKan(struct hand* hand) {
+    struct meld* cursor = hand->meldsHead;
+    while (cursor != 0) {
+        if (cursor->headTile == hand->drawn && (cursor->data & MELD_TRIPLET) == MELD_TRIPLET) {
+            hand->drawn = 0;
+            cursor->data |= MELD_KAN;
+            return 1;
+        }
+        cursor = cursor->next;
+    }
+    return 0;
+}
+
 char closedKan(struct hand* hand, uint8_t tileIndex) {
+    struct handTile* targetHandTile;
+
+    // if the player is trying to kan with their drawn tile, they might actually be trying to upgrade a Kan
+    if (tileIndex == 0 && hand->drawn != 0) {
+        if (upgradeToKan(hand))
+            return 1;
+        else {
+            targetHandTile = findInHand(hand, hand->drawn & ~IS_AKA);
+            if (targetHandTile == 0) return 0;
+        }
+    }
+    else
+        targetHandTile = getHandTileAt(hand, tileIndex);
     
-    struct handTile* targetHandTile = getHandTileAt(hand, tileIndex);
     char tileValue = targetHandTile->value & (~IS_AKA);
     uint8_t tileData = targetHandTile->data;
     uint8_t tileCount = tileData & HANDTILE_COUNT_MASK;

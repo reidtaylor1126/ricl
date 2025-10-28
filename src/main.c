@@ -5,9 +5,15 @@
 #include "cursor.h"
 
 int main(int argc, const char* argv[]) {
-    long seed = time(NULL);
-    // srand(seed);
-    srand(1758948379);
+
+    long seed;
+
+    if (argc > 1) 
+        seed = atoi(argv[1]);
+    else
+        seed = time(NULL);
+    // seed = 1758948379;
+    srand(seed);
 
     struct table* myTable = createTable();
 
@@ -22,7 +28,7 @@ int main(int argc, const char* argv[]) {
         if (currentPlayer->turnStage == NOT_TURN)  {
             
             while (! waitForNextReady(myTable));
-            
+
             // renderDiscards(myTable->players[myTable->playerTurn]);
             renderTable(myTable, 0);
             moveCursorTo(0, 24);

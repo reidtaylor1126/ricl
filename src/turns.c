@@ -60,7 +60,7 @@ void handleChi(struct table* table, struct player* currentPlayer) {
 
     currentPlayer->hand->drawn = table->lastDiscard->tile;
 
-    uint8_t sequenceImprint = findSequencesFor(currentPlayer->hand, table->lastDiscard->tile);
+    uint8_t sequenceImprint = findSequencesForTile(currentPlayer->hand, table->lastDiscard->tile);
 
     if (! (sequenceImprint & HAS_SEQUENCE)) {
         printf("No sequences in hand for tile!\n");
@@ -70,8 +70,44 @@ void handleChi(struct table* table, struct player* currentPlayer) {
     currentPlayer->turnStage = CHOOSING_CHI;
 }
 
+uint8_t mapChiRemoves(int* toRemove, int headDistance, uint8_t sequenceImprint) {
+    switch (headDistance) {
+        case 0:
+            if ((sequenceImprint & SEQUENCE_ABOVE_MASK) == SEQUENCE_ABOVE_MASK) {
+                toRemove[0] = 1;
+                toRemove[1] = 2;
+            } else {
+                printf("Invalid chi start!\n");
+                return 0;
+            }
+            break;
+        case 1:
+            if ((sequenceImprint & SEQUENCE_CENTER_MASK) == SEQUENCE_CENTER_MASK) {
+                toRemove[0] = -1;
+                toRemove[1] = 1;
+            } else {
+                printf("Invalid chi start!\n");
+                return 0;
+            }
+            break;
+        case 2:
+            if ((sequenceImprint & SEQUENCE_BELOW_MASK) == SEQUENCE_BELOW_MASK) {
+                toRemove[0] = -2;
+                toRemove[1] = -1;
+            } else {
+                printf("Invalid chi start!\n");
+                return 0;
+            }
+            break;
+        default:
+            printf("Invalid index!\n");
+            return 0;
+    }
+    return 1;
+}
+
 void chooseChi(struct table* table, struct player* currentPlayer) {
-    uint8_t sequenceImprint = findSequencesFor(currentPlayer->hand, table->lastDiscard->tile);
+    uint8_t sequenceImprint = findSequencesForTile(currentPlayer->hand, table->lastDiscard->tile);
     printf("Sequence imprint: %hu\n", sequenceImprint);
 
     if (! (sequenceImprint & HAS_SEQUENCE)) {
@@ -114,42 +150,11 @@ void chooseChi(struct table* table, struct player* currentPlayer) {
         return ;
     } else {
         int toRemove[2];
-        switch (headDistance) {
-            case 0:
-                if ((sequenceImprint & SEQUENCE_ABOVE_MASK) == SEQUENCE_ABOVE_MASK) {
-                    toRemove[0] = 1;
-                    toRemove[1] = 2;
-                } else {
-                    currentPlayer->hand->drawn = 0;
-                    printf("Invalid chi start!\n");
-                    return;
-                }
-                break;
-            case 1:
-                if ((sequenceImprint & SEQUENCE_CENTER_MASK) == SEQUENCE_CENTER_MASK) {
-                    toRemove[0] = -1;
-                    toRemove[1] = 1;
-                } else {
-                    currentPlayer->hand->drawn = 0;
-                    printf("Invalid chi start!\n");
-                    return;
-                }
-                break;
-            case 2:
-                if ((sequenceImprint & SEQUENCE_BELOW_MASK) == SEQUENCE_BELOW_MASK) {
-                    toRemove[0] = -2;
-                    toRemove[1] = -1;
-                } else {
-                    currentPlayer->hand->drawn = 0;
-                    printf("Invalid chi start!\n");
-                    return;
-                }
-                break;
-            default:
-                currentPlayer->hand->drawn = 0;
-                printf("Invalid index!\n");
-                return;
+        if (!mapChiRemoves(toRemove, headDistance, sequenceImprint)) {
+            currentPlayer->hand->drawn = 0;
+            return;
         }
+        
         char meldData = MELD_SEQUENCE;
         for (int i = 0; i < 2; i++) {
             printf("%d ", i);
@@ -197,7 +202,7 @@ void handleRiichi(struct table* table, struct player* currentPlayer) {
 void handleClosedKan(struct table* table, struct player* currentPlayer) {
     char inputBuffer[4];
     printf(CURSOR_UP"\rKan which tile? > ", 1);
-    eraseNextN(36);
+    eraseNextN(40);
     scanf("%s", inputBuffer);
     uint8_t inputNumber = atoi(inputBuffer) & 255;
 

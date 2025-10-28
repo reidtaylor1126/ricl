@@ -1,23 +1,86 @@
 #include "scoring.h"
 
-uint8_t hasSevenPairs(struct hand* hand) {
-    uint8_t numNotPaired;
-    char current = 0;
-    uint8_t numCurrent = 0;
+uint8_t getSuits(struct hand* hand, struct handTile** buffer) {
     struct handTile* cursor = hand->tilesHead;
+    uint8_t numSuits = 0;
+    char currentSuit = cursor->value & SUIT_MASK;
     while (cursor != 0) {
-        if ((cursor->value & ~IS_AKA) != current) {
-            numNotPaired++;
-            current = cursor->value & ~IS_AKA;
-            numCurrent = 1;
-        } else {
-            if (numCurrent == 1) {
-                numNotPaired--;
-            }
+        char cursorSuit = cursor->value & SUIT_MASK;
+        if (cursorSuit != currentSuit) {
+            currentSuit = cursorSuit;
+            buffer[numSuits] = cursor;
+            numSuits++;
         }
         cursor = cursor->next;
     }
-    return numNotPaired == 0;
+    return numSuits+1;
+}
+
+char orphansWait(struct hand* hand) {
+    if (hand->nClosed != 13)
+        return 0;
+
+    char pattern[] = {
+        SUIT_MAN + 1,
+        SUIT_MAN + 9,
+        SUIT_SOU + 1,
+        SUIT_SOU + 9,
+        SUIT_PIN + 1,
+        SUIT_PIN + 9,
+        IS_DRAGON,
+        IS_DRAGON + 1,
+        IS_DRAGON + 2,
+        IS_WIND,
+        IS_WIND + 1,
+        IS_WIND + 2,
+        IS_WIND + 3
+    };
+
+    uint16_t match = ORPHANS_TEMPLATE;
+    uint8_t missing = 0;
+
+    uint8_t i = 0;
+    struct handTile* cursor = hand->tilesHead;
+    while (cursor != 0) {
+        if (cursor->value == pattern[i]) {
+            if ((cursor->data & HANDTILE_COUNT_MASK) > 2) {
+                return 0;
+            } else if ((cursor->data & HANDTILE_COUNT_MASK) == 2) {
+                match ^= 1 << 15;
+            }
+            match ^= 1 << i;
+            i++;
+        } else if (i < 12 && cursor->value == pattern[i+1]) {
+            if (missing != 0) {
+                return 0;
+            }
+            missing = pattern[i];
+            i+=2;
+        } else {
+            return 0;
+        }
+        cursor = cursor->next;
+    }
+
+    if (match == 1 << 15)
+        return 255;
+
+    return missing;
+}
+
+uint8_t getExclusivePairs(struct hand* hand, uint8_t* locations) {
+    uint8_t numPairs = 0;
+    uint8_t index = 0;
+    struct handTile* cursor = hand->tilesHead;
+    while (cursor != 0) {
+        if ((cursor->data & HANDTILE_COUNT_MASK) == 2) {
+            locations[numPairs] = index;
+            numPairs++;
+        }
+        cursor = cursor->next;
+        index++;
+    }
+    return numPairs;
 }
 
 uint8_t findTriplets(struct hand* hand, uint8_t* ends) {
@@ -31,7 +94,7 @@ uint8_t findTriplets(struct hand* hand, uint8_t* ends) {
 
     while (cursor != 0) {
         if ((cursor->data & HANDTILE_COUNT_MASK) > 2) {
-            ends[numTriplets] = index + 0x80;
+            ends[numTriplets] = index + IS_TRIPLET;
             numTriplets++;
             ends[numTriplets] = 255;
         }
@@ -89,7 +152,7 @@ uint8_t findSequences(struct hand* hand, uint8_t* ends) {
     return numSequences;
 }
 
-uint8_t findSequencesFor(struct hand* hand, char tile) {
+uint8_t findSequencesForTile(struct hand* hand, char tile) {
     if (tile & IS_HONOR)
         return 0;
 
@@ -122,31 +185,15 @@ uint8_t findSequencesFor(struct hand* hand, char tile) {
 }
 
 /** 
- * TODO use weighted interval scheduling algorithm to find tenpai
- * identify all possible triplets and sequences
- * store last index of meld in 0-terminated arrays
- * concatenate arrays
- * sort arrays
- * iterate through, choosing the first meld that does not overlap previous
- * if 4 melds, then tenpai
- * if 3 melds, search for pairs
- *   - if 2 pairs, tenpai, add both pair values to waits
- *   - if 1 pair
- *       - if other 2 are sequential, tenpai, add sequence members (if exist) to waits
- *       - else, noten
- *   - else, noten
- * else, noten
- *
- * run iteration again but backwards
- * merge waits
+ * Strategy: check special cases first
  * 
- * 7 pairs: identify all pairs, if 1 left then tenpai
+ * 7 pairs: if there are 6 pairs then the sole tile is the wait
  *
- * 13 orphans: for each tile: if the next tile is not the same or the next honor, set flag. if flag already set, then noten. 
+ * 13 orphans: 
 */ 
 
 uint8_t findWaits(struct hand* hand, char* waits) {
-    
+
 
     return 0;
 }
